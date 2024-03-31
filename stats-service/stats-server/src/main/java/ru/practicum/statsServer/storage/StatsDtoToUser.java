@@ -1,4 +1,4 @@
-package ru.practicum.statsServer.model;
+package ru.practicum.statsServer.storage;
 
 public interface StatsDtoToUser {
     String getApp();

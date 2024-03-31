@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.statsDto.GetStatsParamsDto;
 import ru.practicum.statsDto.NewStatsDto;
 import ru.practicum.statsServer.mapper.StatsDtoMapper;
-import ru.practicum.statsServer.model.StatsDtoToUser;
+import ru.practicum.statsServer.storage.StatsDtoToUser;
 import ru.practicum.statsServer.storage.StatsRepository;
 
 import java.time.LocalDateTime;
@@ -17,11 +17,12 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class StatsServiceImpl implements StatsService {
     private final StatsRepository statsRepository;
+    private final StatsDtoMapper statsDtoMapper;
 
     @Override
     @Transactional
     public void saveStats(NewStatsDto newStatsDto) {
-        statsRepository.save(StatsDtoMapper.toStatistic(newStatsDto));
+        statsRepository.save(statsDtoMapper.toStatistic(newStatsDto));
     }
 
     @Override
@@ -35,7 +36,6 @@ public class StatsServiceImpl implements StatsService {
             return statsRepository.findAllByTimestampBetweenOrderByHitsDesc(start, end);
         } else if (uris != null && unique.equals(true)) {
             return statsRepository.findAllDistinctByIpAndUriInAndTimestampBetween(uris, start, end);
-
         } else if (uris == null && unique.equals(true)) {
             return statsRepository.findAllDistinctByIpAndTimestampBetween(start, end);
         } else {

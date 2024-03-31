@@ -6,8 +6,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.statsDto.GetStatsParamsDto;
 import ru.practicum.statsDto.NewStatsDto;
-import ru.practicum.statsServer.model.StatsDtoToUser;
 import ru.practicum.statsServer.service.StatsService;
+import ru.practicum.statsServer.storage.StatsDtoToUser;
 
 import javax.validation.Valid;
 import java.time.LocalDateTime;
