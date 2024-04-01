@@ -10,12 +10,11 @@
     </parent>
 
     <artifactId>stats-server</artifactId>
-    <version>${stats-server.version}</version>
+    <version>0.0.1-SNAPSHOT</version>
 
     <properties>
         <logbook.version>2.14.0</logbook.version>
         <stats-dto.version>0.0.1-SNAPSHOT</stats-dto.version>
-        <stats-server.version>0.0.1-SNAPSHOT</stats-server.version>
     </properties>
 
     <dependencies>

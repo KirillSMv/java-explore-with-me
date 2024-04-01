@@ -10,10 +10,9 @@
     </parent>
 
     <artifactId>stats-client</artifactId>
-    <version>${stats-client.version}</version>
+    <version>0.0.1-SNAPSHOT</version>
 
     <properties>
-        <stats-client.version>0.0.1-SNAPSHOT</stats-client.version>
         <stats-dto.version>0.0.1-SNAPSHOT</stats-dto.version>
     </properties>
 

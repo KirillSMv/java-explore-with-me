@@ -10,10 +10,9 @@
     </parent>
 
     <artifactId>ewm-service</artifactId>
-    <version>${ewm-service.version}</version>
+    <version>0.0.1-SNAPSHOT</version>
 
     <properties>
-        <ewm-service.version>0.0.1-SNAPSHOT</ewm-service.version>
         <stats-client.version>0.0.1-SNAPSHOT</stats-client.version>
     </properties>
 
