@@ -12,7 +12,9 @@ import ru.practicum.statsDto.NewStatsDto;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -35,10 +37,18 @@ public class StatsClient extends BaseClient {
 
     protected ResponseEntity<Object> getStats(GetStatsParamsDto getStatsParamsDto) {
         Map<String, Object> params = Map.of(
-                "start", URLEncoder.encode(getStatsParamsDto.getStart().format(formatter), StandardCharsets.UTF_8),
-                "end", URLEncoder.encode(getStatsParamsDto.getEnd().format(formatter), StandardCharsets.UTF_8),
-                "uris", getStatsParamsDto.getUris(),
-                "unique", getStatsParamsDto.getUnique());
+                "start", getEncodedAndFormattedTime(getStatsParamsDto.getStart()),
+                "end", getEncodedAndFormattedTime(getStatsParamsDto.getEnd()),
+                "uris", getUrisAsString(getStatsParamsDto.getUris()),
+                "unique", getStatsParamsDto.isUnique());
         return get("/stats", params);
+    }
+
+    private String getUrisAsString(List<String> uris) {
+        return String.join(",", uris);
+    }
+
+    private String getEncodedAndFormattedTime(LocalDateTime time) {
+        return URLEncoder.encode(time.format(formatter), StandardCharsets.UTF_8);
     }
 }

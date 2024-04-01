@@ -14,5 +14,5 @@ public class GetStatsParamsDto {
     LocalDateTime start;
     LocalDateTime end;
     List<String> uris;
-    Boolean unique;
+    boolean unique;
 }

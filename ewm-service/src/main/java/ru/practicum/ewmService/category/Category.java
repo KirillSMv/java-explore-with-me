@@ -1,4 +1,4 @@
-package ru.practicum.ewmService;
+package ru.practicum.ewmService.category;
 
 public class Category {
     Long id;

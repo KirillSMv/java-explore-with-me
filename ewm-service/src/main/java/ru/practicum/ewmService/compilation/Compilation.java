@@ -1,4 +1,6 @@
-package ru.practicum.ewmService;
+package ru.practicum.ewmService.compilation;
+
+import ru.practicum.ewmService.event.Event;
 
 import java.util.Set;
 

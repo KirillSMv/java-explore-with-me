@@ -10,7 +10,11 @@
     </parent>
 
     <artifactId>stats-dto</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>${stats-dto.version}</version>
+
+    <properties>
+        <stats-dto.version>0.0.1-SNAPSHOT</stats-dto.version>
+    </properties>
 
     <dependencies>
         <dependency>

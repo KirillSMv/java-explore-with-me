@@ -10,7 +10,13 @@
     </parent>
 
     <artifactId>stats-server</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>${stats-server.version}</version>
+
+    <properties>
+        <logbook.version>2.14.0</logbook.version>
+        <stats-dto.version>0.0.1-SNAPSHOT</stats-dto.version>
+        <stats-server.version>0.0.1-SNAPSHOT</stats-server.version>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -64,13 +70,13 @@
         <dependency>
             <groupId>org.zalando</groupId>
             <artifactId>logbook-spring-boot-starter</artifactId>
-            <version>2.14.0</version>
+            <version>${logbook.version}</version>
         </dependency>
 
         <dependency>
             <groupId>ru.practicum</groupId>
             <artifactId>stats-dto</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${stats-dto.version}</version>
         </dependency>
     </dependencies>
 

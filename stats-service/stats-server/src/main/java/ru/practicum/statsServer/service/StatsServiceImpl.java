@@ -30,13 +30,13 @@ public class StatsServiceImpl implements StatsService {
         LocalDateTime start = getStatsParamsDto.getStart();
         LocalDateTime end = getStatsParamsDto.getEnd();
         List<String> uris = getStatsParamsDto.getUris();
-        Boolean unique = getStatsParamsDto.getUnique();
+        boolean unique = getStatsParamsDto.isUnique();
 
-        if (uris == null && unique.equals(false)) {
+        if (uris == null && !unique) {
             return statsRepository.findAllByTimestampBetweenOrderByHitsDesc(start, end);
-        } else if (uris != null && unique.equals(true)) {
+        } else if (uris != null && unique) {
             return statsRepository.findAllDistinctByIpAndUriInAndTimestampBetween(uris, start, end);
-        } else if (uris == null && unique.equals(true)) {
+        } else if (uris == null) {
             return statsRepository.findAllDistinctByIpAndTimestampBetween(start, end);
         } else {
             return statsRepository.findAllByUriInAndTimestampBetweenOrderByHitsDesc(uris, start, end);
