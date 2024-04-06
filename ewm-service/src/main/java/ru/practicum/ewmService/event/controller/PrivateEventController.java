@@ -20,7 +20,6 @@ import ru.practicum.ewmService.request.dto.ParticipationRequestStatusUpdateReque
 import ru.practicum.ewmService.request.dto.ParticipationRequestStatusUpdateResult;
 import ru.practicum.ewmService.user.exception.CustomValidationException;
 import ru.practicum.statsClient.StatClient;
-import ru.practicum.statsClient.StatsClient;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.Min;
