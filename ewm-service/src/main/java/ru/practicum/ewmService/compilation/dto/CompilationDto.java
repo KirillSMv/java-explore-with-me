@@ -9,8 +9,8 @@ import ru.practicum.ewmService.event.dto.EventShortDto;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CompilationDto {
-    Long id;
-    EventShortDto events;
-    Boolean pinned;
-    String title;
+    private Long id;
+    private EventShortDto events;
+    private Boolean pinned;
+    private String title;
 }
