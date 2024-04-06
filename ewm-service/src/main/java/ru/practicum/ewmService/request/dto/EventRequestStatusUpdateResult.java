@@ -7,8 +7,10 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ParticipationRequestStatusUpdateResult {
+public class EventRequestStatusUpdateResult {
     //Результат подтверждения/отклонения заявок на участие в событии
-    private ParticipationRequestDto confirmedRequests;
-    private ParticipationRequestDto rejectedRequests;
+    ParticipationRequestDto confirmedRequests;
+    ParticipationRequestDto rejectedRequests;
+
+
 }
