@@ -6,46 +6,46 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.ewmService.event.Location;
 import ru.practicum.ewmService.event.enums.EventStateAction;
+import ru.practicum.ewmService.event.validation.EventDateValidation;
+import ru.practicum.ewmService.event.validation.NotBlankNullable;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateEventAdminRequest {
-    //Данные для изменения информации о событии. Если поле в запросе не указано (равно null) - значит изменение этих данных не треубется.
-    @NotBlank
+    @NotBlankNullable
     @Size(min = 20, max = 2000, message = "Минимальное количество символов в кратком описании - 20, " +
             "максимальное - 2000, пожалуйста, проверьте правильность указанных данных")
-    String annotation;
+    private String annotation;
 
-    @NotNull
-    Long category;
+    private Long category;
 
-    @NotBlank
+    @NotBlankNullable
     @Size(min = 20, max = 7000, message = "Минимальное количество символов в описании - 20, максимальное - 7000, " +
             "пожалуйста, проверьте правильность указанных данных")
-    String description;
+    private String description;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    String eventDate;
+    @EventDateValidation
+    LocalDateTime eventDate;
 
-    Location location;
+    private Location location;
 
-    Boolean paid;
+    private Boolean paid;
 
-    Integer participantLimit; //0 - нет// ограничений на количество участников
+    private Integer participantLimit; //0 - нет// ограничений на количество участников
 
-    Boolean requestModeration;
+    private Boolean requestModeration;
     //Если true, то все заявки будут ожидать подтверждения инициатором события.
     // Если false - то будут подтверждаться автоматически.
 
-    EventStateAction stateAction;
+    private EventStateAction stateAction;
 
-    @NotBlank
+    @NotBlankNullable
     @Size(min = 3, max = 120, message = "Минимальное количество символов в заголовке - 3, максимальное - 120, " +
             "пожалуйста, проверьте правильность указанных данных")
-    String title;
+    private String title;
 }

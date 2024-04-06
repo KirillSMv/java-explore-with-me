@@ -6,15 +6,21 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.ewmService.request.enums.RequestState;
 
+import java.time.LocalDateTime;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class ParticipationRequestDto {
     //заявка на участе в событии
-    Long id;
-    Long event;
+    private Long id;
+
+    private Long event;
+
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS")
-    String created;
-    Long requester;
-    RequestState status = RequestState.PENDING;
+    private LocalDateTime created = LocalDateTime.now();
+
+    private Long requester;
+
+    private RequestState status = RequestState.PENDING;
 }

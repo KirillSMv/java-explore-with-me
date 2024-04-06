@@ -2,6 +2,7 @@ package ru.practicum.statsServer.storage;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import ru.practicum.statsServer.model.Statistic;
 
@@ -33,7 +34,29 @@ public interface StatsRepository extends JpaRepository<Statistic, Long> {
             "ORDER BY COUNT(st.ip) DESC", nativeQuery = true)
     List<StatsDtoToUser> findAllDistinctByIpAndTimestampBetween(LocalDateTime start, LocalDateTime end);
 
-    @Query(value = "SELECT st.app, st.uri, COUNT(st.ip) as hits " +
+/*    @Query(value = "SELECT st.app, st.uri, COUNT(DISTINCT st.ip) as hits " +
+            "FROM stats as st " +
+            //"WHERE (:uris IS NULL OR st.uri IN (:uris))" +
+            "WHERE st.uri IN (COALESCE(:uris, st.uri))" +
+            "AND st.timestamp between :start and :end " +
+            "group by st.app, st.uri " +
+            "ORDER BY COUNT(st.ip) DESC", nativeQuery = true)
+    List<StatsDtoToUser> findAllDistinctByIpAndTimestampBetweenWithNullableUris(@Param("uris") List<String> uris,
+                                                                                @Param("start") LocalDateTime start,
+                                                                                @Param("end") LocalDateTime end);*/
+
+/*    @Query(value = "SELECT st.app, st.uri, COUNT(st.ip) as hits " +
+            "FROM stats as st " +
+            //"WHERE st.uri IN (:uris) " +
+            //"WHERE (:uris IS NULL OR st.uri IN (:uris))" +
+            "WHERE st.uri IN (COALESCE(:uris, st.uri))" +
+            "AND st.timestamp between :start and :end " +
+            "group by st.app, st.uri " +
+            "ORDER BY COUNT(st.ip) DESC", nativeQuery = true)
+    List<StatsDtoToUser> findAllByIpAndTimestampBetweenWithNullableUris(@Param("uris") List<String> uris,
+                                                                        @Param("start") LocalDateTime start,
+                                                                        @Param("end") LocalDateTime end);*/
+   @Query(value = "SELECT st.app, st.uri, COUNT(st.ip) as hits " +
             "FROM stats as st " +
             "WHERE st.uri IN (?1) " +
             "AND st.timestamp between ?2 and ?3 " +

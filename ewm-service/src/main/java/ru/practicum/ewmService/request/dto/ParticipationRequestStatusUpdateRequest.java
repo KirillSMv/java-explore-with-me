@@ -10,10 +10,8 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class EventRequestStatusUpdateRequest {
+public class ParticipationRequestStatusUpdateRequest {
     //Изменение статуса запроса на участие в событии текущего пользователя
-
-    List<Long> requestIds; //Идентификаторы запросов на участие в событии текущего пользователя
-    RequestState status; //Новый статус запроса на участие в событии текущего пользователя
-
+    private List<Long> requestIds; //Идентификаторы запросов на участие в событии текущего пользователя
+    private RequestState status; //Новый статус запроса на участие в событии текущего пользователя
 }
