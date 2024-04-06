@@ -12,11 +12,12 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class NewCompilationDto {
-    private List<Long> events;
-    private Boolean pinned;
+    List<Long> events;
+    Boolean pinned;
 
     @NotBlank
     @Size(min = 1, max = 50, message = "Минимальное количество символов в подборке событий - 1, " +
             "максимальное - 50, пожалуйста, проверьте правильность указанных данных")
-    private String title;
+    String title;
+
 }
