@@ -1,9 +1,10 @@
-package ru.practicum.statsClient;
+package ru.practicum.ewmService.statClient;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 
+/*
 @Configuration
 public class StatClientConfig {
 
@@ -12,3 +13,4 @@ public class StatClientConfig {
         return new RestTemplate();
     }
 }
+*/

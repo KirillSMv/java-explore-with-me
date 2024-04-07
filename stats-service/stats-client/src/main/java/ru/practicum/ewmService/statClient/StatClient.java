@@ -1,32 +1,36 @@
-package ru.practicum.statsClient;
+package ru.practicum.ewmService.statClient;
 
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.statsDto.NewStatsDto;
+import ru.practicum.statsDto.StatsToUserDto;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class StatClient {
 
     private final RestTemplate restTemplate;
 
-/*    @Autowired
+    @Autowired
     public StatClient(@Value("${stats-service.url}") String serverUrl, RestTemplateBuilder builder) {
         this.restTemplate = builder
                 .uriTemplateHandler(new DefaultUriBuilderFactory(serverUrl))
                 .requestFactory(HttpComponentsClientHttpRequestFactory::new)
                 .build();
-    }*/
+    }
 
-    public String postStats(NewStatsDto newStatsDto) {
+    public StatsToUserDto postStats(NewStatsDto newStatsDto) {
         HttpEntity<NewStatsDto> requestEntity = new HttpEntity<>(newStatsDto, defaultHeaders());
-        return restTemplate.postForObject("/hit", requestEntity, String.class);
+        return restTemplate.postForObject("/hit", requestEntity, StatsToUserDto.class);
     }
 
 /*

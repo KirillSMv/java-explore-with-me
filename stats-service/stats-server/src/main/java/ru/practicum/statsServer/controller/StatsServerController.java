@@ -6,8 +6,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.statsDto.GetStatsParamsDto;
 import ru.practicum.statsDto.NewStatsDto;
+import ru.practicum.statsDto.StatsToUserDto;
 import ru.practicum.statsServer.service.StatsService;
-import ru.practicum.statsServer.storage.StatsDtoToUser;
 
 import javax.validation.Valid;
 import java.time.LocalDateTime;
@@ -22,19 +22,17 @@ public class StatsServerController {
     private final StatsService service;
 
     @PostMapping("/hit")
-    public String postStatistics(@RequestBody @Valid NewStatsDto newStatsDto) {
+    public StatsToUserDto postStatistics(@RequestBody @Valid NewStatsDto newStatsDto) {
         log.info("method postStatistics, parameter = {}", newStatsDto);
-        service.saveStats(newStatsDto);
-        return "Информация сохранена";
+        return service.saveStats(newStatsDto);
     }
 
     @GetMapping("/stats")
-    public List<StatsDtoToUser> getStats(@RequestParam("start") LocalDateTime start,
+    public List<StatsToUserDto> getStats(@RequestParam("start") LocalDateTime start,
                                          @RequestParam("end") LocalDateTime end,
                                          @RequestParam(name = "uris", required = false) List<String> uris,
                                          @RequestParam(name = "unique", defaultValue = "false") Boolean unique) {
         log.info("method getStats, params: start = {}, end = {}, uris = {}, unique = {}", start, end, uris, unique);
         return service.getStats(new GetStatsParamsDto(start, end, uris, unique));
     }
-
 }

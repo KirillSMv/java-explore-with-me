@@ -18,12 +18,17 @@ import ru.practicum.ewmService.event.service.PrivateEventService;
 import ru.practicum.ewmService.request.dto.ParticipationRequestDto;
 import ru.practicum.ewmService.request.dto.ParticipationRequestStatusUpdateRequest;
 import ru.practicum.ewmService.request.dto.ParticipationRequestStatusUpdateResult;
+import ru.practicum.ewmService.statClient.StatClient;
 import ru.practicum.ewmService.user.exception.CustomValidationException;
-import ru.practicum.statsClient.StatClient;
+import ru.practicum.statsDto.NewStatsDto;
+import ru.practicum.statsDto.StatsToUserDto;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.Min;
+import java.time.LocalDateTime;
 import java.util.List;
+
+import static ru.practicum.ewmService.Constants.APP;
 
 @RestController
 @Slf4j
@@ -49,6 +54,9 @@ public class PrivateEventController {
                                                                     @RequestParam(value = "from", defaultValue = "0") @Min(value = 0) Integer from,
                                                                     @RequestParam(value = "size", defaultValue = "10") @Min(value = 1) Integer size) {
         log.info("getEventsAddedByUser method, parameters: userId = {}, from = {}, size = {}", userId, from, size);
+
+
+
         return new ResponseEntity<>(privateEventService.getEventsAddedByUser(userId, PageRequest.of(from / size, size)), HttpStatus.OK);
     }
 
@@ -57,14 +65,17 @@ public class PrivateEventController {
                                                                     @PathVariable("eventId") @Min(1) Long eventId,
                                                                     HttpServletRequest request) {
         log.info("getDetailedEventAddedByUser method, parameters userId = {}, eventId = {}", userId, eventId);
+
+
         String uri = request.getRequestURI();
         log.info("uri = {}", uri);
-        String parameter = request.getContextPath();
-        log.info("parameter = {}", parameter);
         String ip = request.getRemoteAddr();
         log.info("ip = {}", ip);
+        NewStatsDto newStatsDto = new NewStatsDto(APP, uri, ip, LocalDateTime.now());
+        StatsToUserDto statsToUserDto = statClient.postStats(newStatsDto);
+        log.info("statsToUserDto = {}", statsToUserDto);
         return new ResponseEntity<>(null, HttpStatus.OK);
-        //statClient.postStats()
+
         //return new ResponseEntity<>(privateEventService.getDetailedEventAddedByUser((userId), eventId), HttpStatus.OK);
     }
 
