@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.statsDto.GetStatsParamsDto;
+import ru.practicum.statsDto.StatsParamsDto;
 import ru.practicum.statsDto.NewStatsDto;
 import ru.practicum.statsDto.StatsToUserDto;
 import ru.practicum.statsServer.mapper.StatsDtoMapper;
@@ -32,11 +32,11 @@ public class StatsServiceImpl implements StatsService {
     }
 
     @Override
-    public List<StatsToUserDto> getStats(GetStatsParamsDto getStatsParamsDto) {
-        LocalDateTime start = getStatsParamsDto.getStart();
-        LocalDateTime end = getStatsParamsDto.getEnd();
-        List<String> uris = getStatsParamsDto.getUris();
-        boolean unique = getStatsParamsDto.isUnique();
+    public List<StatsToUserDto> getStats(StatsParamsDto statsParamsDto) {
+        LocalDateTime start = statsParamsDto.getStart();
+        LocalDateTime end = statsParamsDto.getEnd();
+        List<String> uris = statsParamsDto.getUris();
+        boolean unique = statsParamsDto.isUnique();
         List<StatsDtoToUser> stats;
 
         if (uris == null && !unique) {

@@ -44,8 +44,9 @@ CREATE TABLE IF NOT EXISTS events (
 );
 
 CREATE TABLE IF NOT EXISTS events_compilations (
-    event_id BIGINT,
-    compilation_id BIGINT,
+    event_id BIGINT NOT NULL,
+    compilation_id BIGINT NOT NULL,
+    CONSTRAINT pk_event_id_compilation_id PRIMARY KEY (event_id, compilation_id),
     CONSTRAINT fk_events_compilations_to_events FOREIGN KEY(event_id) REFERENCES events(id) ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT fk_events_compilations_to_compilations FOREIGN KEY(compilation_id) REFERENCES compilations(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
@@ -57,8 +58,10 @@ CREATE TABLE IF NOT EXISTS event_requests (
     user_id BIGINT,
     status varchar(9) NOT NULL,
     CONSTRAINT fk_event_requests_to_users FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT fk_event_requests_to_events FOREIGN KEY(event_id) REFERENCES events(id) ON DELETE CASCADE ON UPDATE CASCADE
+    CONSTRAINT fk_event_requests_to_events FOREIGN KEY(event_id) REFERENCES events(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT unique_event_id_user_id UNIQUE(event_id, user_id)
 );
+
 
 
 

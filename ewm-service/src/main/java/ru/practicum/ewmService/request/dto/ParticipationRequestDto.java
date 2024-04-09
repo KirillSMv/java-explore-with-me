@@ -12,15 +12,14 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ParticipationRequestDto {
-    //заявка на участе в событии
     private Long id;
 
     private Long event;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS")
-    private LocalDateTime created = LocalDateTime.now();
+    private LocalDateTime created;
 
     private Long requester;
 
-    private RequestState status = RequestState.PENDING;
+    private RequestState status;
 }

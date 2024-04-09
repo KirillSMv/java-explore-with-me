@@ -7,8 +7,11 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewmService.category.Category;
 import ru.practicum.ewmService.category.dto.CategoryDto;
 import ru.practicum.ewmService.category.dto.mapper.CategoryDtoMapper;
-import ru.practicum.ewmService.category.storage.AdminCategoryRepository;
-import ru.practicum.ewmService.user.exception.ObjectNotFoundException;
+import ru.practicum.ewmService.category.service.interfaces.AdminCategoryService;
+import ru.practicum.ewmService.category.storage.CategoryRepository;
+import ru.practicum.ewmService.event.storage.EventRepository;
+import ru.practicum.ewmService.exceptions.CategoryProcessingException;
+import ru.practicum.ewmService.exceptions.ObjectNotFoundException;
 
 @Service
 @Slf4j
@@ -16,33 +19,36 @@ import ru.practicum.ewmService.user.exception.ObjectNotFoundException;
 @Transactional(readOnly = true)
 public class AdminCategoryServiceImpl implements AdminCategoryService {
 
-    private final AdminCategoryRepository adminCategoryRepository;
+    private final CategoryRepository categoryRepository;
     private final CategoryDtoMapper categoryDtoMapper;
+    private final EventRepository eventRepository;
 
     @Override
     @Transactional
     public CategoryDto addCategory(CategoryDto categoryDto) {
         Category category = categoryDtoMapper.toCategory(categoryDto);
         log.info("category = {}", category);
-        return categoryDtoMapper.toCategoryDto(adminCategoryRepository.save(category));
+        return categoryDtoMapper.toCategoryDto(categoryRepository.save(category));
     }
 
     @Override
     @Transactional
     public void deleteCategory(Long catId) {
-        adminCategoryRepository.findById(catId).orElseThrow(() -> {
+        Category category = categoryRepository.findById(catId).orElseThrow(() -> {
             log.error("Category with id {} not found", catId);
             return new ObjectNotFoundException("The required object was not found.", String.format("Category with id=%d was not found", catId));
         });
-        //проверка, что с категорией не связано ни одно событие
-        //делаем запрос в поиск событий по категории //todo
-        adminCategoryRepository.deleteById(catId);
+        if (eventRepository.countByCategory(category) > 0) {
+            log.error("The category is not empty");
+            throw new CategoryProcessingException("For the requested operation the conditions are not met.", "The category is not empty");
+        }
+        categoryRepository.deleteById(catId);
     }
 
     @Override
     @Transactional
     public CategoryDto updateCategory(CategoryDto categoryDto, Long catId) {
-        Category category = adminCategoryRepository.findById(catId).orElseThrow(() -> {
+        Category category = categoryRepository.findById(catId).orElseThrow(() -> {
             log.error("Category with id {} not found", catId);
             return new ObjectNotFoundException("The required object was not found.", String.format("Category with id=%d was not found", catId));
         });

@@ -27,7 +27,7 @@ public class ParticipationRequest {
     private Event event;
 
     @Column(name = "created")
-    private LocalDateTime created;
+    private LocalDateTime created = LocalDateTime.now();
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", referencedColumnName = "id")
@@ -35,5 +35,5 @@ public class ParticipationRequest {
     private User requester;
 
     @Enumerated(EnumType.STRING)
-    private RequestState status; // = ?
+    private RequestState status = RequestState.PENDING;
 }

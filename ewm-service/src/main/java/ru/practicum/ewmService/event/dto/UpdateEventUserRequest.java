@@ -45,7 +45,7 @@ public class UpdateEventUserRequest {
     //Если true, то все заявки будут ожидать подтверждения инициатором события.
     // Если false - то будут подтверждаться автоматически.
 
-    EventStateAction stateAction;
+    EventStateAction stateAction = EventStateAction.SEND_TO_REVIEW;
 
     @NotBlankNullable
     @Size(min = 3, max = 120, message = "Минимальное количество символов в заголовке - 3, максимальное - 120, " +

@@ -4,8 +4,8 @@ import org.springframework.stereotype.Component;
 import ru.practicum.ewmService.category.Category;
 import ru.practicum.ewmService.category.dto.CategoryDto;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class CategoryDtoMapper {
@@ -21,11 +21,7 @@ public class CategoryDtoMapper {
     }
 
     public List<CategoryDto> toCategoryDtoList(List<Category> categories) {
-        List<CategoryDto> categoryDtoList = new ArrayList<>();
-        for (Category category : categories) {
-            categoryDtoList.add(toCategoryDto(category));
-        }
-        return categoryDtoList;
+        return categories.stream().map(this::toCategoryDto).collect(Collectors.toList());
     }
 
 }

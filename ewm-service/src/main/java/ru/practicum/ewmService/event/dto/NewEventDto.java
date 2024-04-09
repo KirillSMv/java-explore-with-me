@@ -38,16 +38,12 @@ public class NewEventDto {
     @NotNull
     private Location location;
 
-    @NotNull
-    private Boolean paid;
+    private boolean paid;
 
     @Min(value = 0, message = "participantLimit cannot be negative")
-    private Integer participantLimit; //0 - нет// ограничений на количество участников
+    private int participantLimit = 0;
 
-    @NotNull
-    private Boolean requestModeration;
-    //Если true, то все заявки будут ожидать подтверждения инициатором события.
-    // Если false - то будут подтверждаться автоматически.
+    private boolean requestModeration = true;
 
     @NotBlank
     @Size(min = 3, max = 120, message = "Минимальное количество символов в заголовке - 3, максимальное - 120, " +

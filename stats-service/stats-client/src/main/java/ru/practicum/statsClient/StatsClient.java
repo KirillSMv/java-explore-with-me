@@ -1,13 +1,11 @@
 package ru.practicum.statsClient;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.web.util.DefaultUriBuilderFactory;
-import ru.practicum.statsDto.GetStatsParamsDto;
+import ru.practicum.statsDto.StatsParamsDto;
 import ru.practicum.statsDto.NewStatsDto;
 
 import java.net.URLEncoder;
@@ -22,10 +20,10 @@ public class StatsClient extends BaseClient {
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Autowired
-    public StatsClient(@Value("${stats-service.url}") String serverUrl, RestTemplateBuilder builder) {
+    public StatsClient(RestTemplateBuilder builder) { //@Value("${stats-service.url}") String serverUrl,
         super(
                 builder
-                        .uriTemplateHandler(new DefaultUriBuilderFactory(serverUrl))
+                        //.uriTemplateHandler(new DefaultUriBuilderFactory(serverUrl))
                         .requestFactory(HttpComponentsClientHttpRequestFactory::new)
                         .build()
         );
@@ -35,12 +33,12 @@ public class StatsClient extends BaseClient {
         return post(body.getUri(), body);
     }
 
-    protected ResponseEntity<Object> getStats(GetStatsParamsDto getStatsParamsDto) {
+    protected ResponseEntity<Object> getStats(StatsParamsDto statsParamsDto) {
         Map<String, Object> params = Map.of(
-                "start", getEncodedAndFormattedTime(getStatsParamsDto.getStart()),
-                "end", getEncodedAndFormattedTime(getStatsParamsDto.getEnd()),
-                "uris", getUrisAsString(getStatsParamsDto.getUris()),
-                "unique", getStatsParamsDto.isUnique());
+                "start", getEncodedAndFormattedTime(statsParamsDto.getStart()),
+                "end", getEncodedAndFormattedTime(statsParamsDto.getEnd()),
+                "uris", getUrisAsString(statsParamsDto.getUris()),
+                "unique", statsParamsDto.isUnique());
         return get("/stats", params);
     }
 

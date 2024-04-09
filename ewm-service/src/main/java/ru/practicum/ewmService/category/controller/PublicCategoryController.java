@@ -8,8 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewmService.category.dto.CategoryDto;
-import ru.practicum.ewmService.category.service.PublicCategoryService;
-import ru.practicum.ewmService.event.dto.EventFullDto;
+import ru.practicum.ewmService.category.service.interfaces.PublicCategoryService;
 
 import javax.validation.constraints.Min;
 import java.util.List;
@@ -32,8 +31,8 @@ public class PublicCategoryController {
     }
 
     @GetMapping("/{catId}")
-    public ResponseEntity<CategoryDto> getUser(@PathVariable("catId") @Min(value = 1) Long catId) {
-        log.info("getUser method, parameters userId = {}", catId);
+    public ResponseEntity<CategoryDto> getCategoryById(@PathVariable("catId") Long catId) {
+        log.info("getCategoryById method, parameters catId = {}", catId);
         return new ResponseEntity<>(publicCategoryService.getCategoryById(catId), HttpStatus.OK);
     }
 }

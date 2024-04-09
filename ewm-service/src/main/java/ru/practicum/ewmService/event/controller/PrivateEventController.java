@@ -14,21 +14,16 @@ import ru.practicum.ewmService.event.dto.EventFullDto;
 import ru.practicum.ewmService.event.dto.EventShortDto;
 import ru.practicum.ewmService.event.dto.NewEventDto;
 import ru.practicum.ewmService.event.dto.UpdateEventUserRequest;
-import ru.practicum.ewmService.event.service.PrivateEventService;
+import ru.practicum.ewmService.event.service.interfaces.PrivateEventService;
+import ru.practicum.ewmService.event.service.interfaces.StatsRecordingService;
+import ru.practicum.ewmService.exceptions.CustomValidationException;
+import ru.practicum.ewmService.request.dto.EventRequestStatusUpdateRequest;
+import ru.practicum.ewmService.request.dto.EventRequestStatusUpdateResult;
 import ru.practicum.ewmService.request.dto.ParticipationRequestDto;
-import ru.practicum.ewmService.request.dto.ParticipationRequestStatusUpdateRequest;
-import ru.practicum.ewmService.request.dto.ParticipationRequestStatusUpdateResult;
-import ru.practicum.ewmService.statClient.StatClient;
-import ru.practicum.ewmService.user.exception.CustomValidationException;
-import ru.practicum.statsDto.NewStatsDto;
-import ru.practicum.statsDto.StatsToUserDto;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.Min;
-import java.time.LocalDateTime;
 import java.util.List;
-
-import static ru.practicum.ewmService.Constants.APP;
 
 @RestController
 @Slf4j
@@ -38,7 +33,6 @@ import static ru.practicum.ewmService.Constants.APP;
 public class PrivateEventController {
 
     private final PrivateEventService privateEventService;
-    private final StatClient statClient;
 
     @PostMapping
     public ResponseEntity<EventFullDto> addEvent(@PathVariable("userId") Long userId,
@@ -55,59 +49,45 @@ public class PrivateEventController {
                                                                     @RequestParam(value = "size", defaultValue = "10") @Min(value = 1) Integer size) {
         log.info("getEventsAddedByUser method, parameters: userId = {}, from = {}, size = {}", userId, from, size);
 
-
-
         return new ResponseEntity<>(privateEventService.getEventsAddedByUser(userId, PageRequest.of(from / size, size)), HttpStatus.OK);
     }
 
     @GetMapping("/{eventId}")
-    public ResponseEntity<EventFullDto> getDetailedEventAddedByUser(@PathVariable("userId") @Min(1) Long userId,
-                                                                    @PathVariable("eventId") @Min(1) Long eventId,
-                                                                    HttpServletRequest request) {
+    public ResponseEntity<EventFullDto> getDetailedEventAddedByUser(@PathVariable("userId") Long userId,
+                                                                    @PathVariable("eventId") Long eventId) {
         log.info("getDetailedEventAddedByUser method, parameters userId = {}, eventId = {}", userId, eventId);
-
-
-        String uri = request.getRequestURI();
-        log.info("uri = {}", uri);
-        String ip = request.getRemoteAddr();
-        log.info("ip = {}", ip);
-        NewStatsDto newStatsDto = new NewStatsDto(APP, uri, ip, LocalDateTime.now());
-        StatsToUserDto statsToUserDto = statClient.postStats(newStatsDto);
-        log.info("statsToUserDto = {}", statsToUserDto);
-        return new ResponseEntity<>(null, HttpStatus.OK);
-
-        //return new ResponseEntity<>(privateEventService.getDetailedEventAddedByUser((userId), eventId), HttpStatus.OK);
+        return new ResponseEntity<>(privateEventService.getDetailedEventAddedByUser((userId), eventId), HttpStatus.OK);
     }
 
     @PatchMapping("/{eventId}")
-    public ResponseEntity<EventFullDto> updateEvent(@PathVariable("userId") @Min(1) Long userId,
-                                                    @PathVariable("eventId") @Min(1) Long eventId,
-                                                    @RequestBody @Validated UpdateEventUserRequest updateEventUserRequest,
-                                                    BindingResult errors) {
+    public ResponseEntity<EventFullDto> updateEventByInitiator(@PathVariable("userId") Long userId,
+                                                               @PathVariable("eventId") Long eventId,
+                                                               @RequestBody @Validated UpdateEventUserRequest updateEventUserRequest,
+                                                               BindingResult errors) {
         checkErrors(errors);
         log.info("updateEvent method, parameters userId = {}, eventId = {}, updateEventUserRequest = {}", userId, eventId, updateEventUserRequest);
         return new ResponseEntity<>(privateEventService.updateEvent((userId), eventId, updateEventUserRequest), HttpStatus.OK);
     }
 
     @GetMapping("/{eventId}/requests")
-    public ResponseEntity<List<ParticipationRequestDto>> getParticipationRequestsFromUser(
-            @PathVariable("userId") @Min(1) Long userId,
-            @PathVariable("eventId") @Min(1) Long eventId) {
+    public ResponseEntity<List<ParticipationRequestDto>> getParticipationRequestsForUserEvent(
+            @PathVariable("userId") Long userId,
+            @PathVariable("eventId") Long eventId) {
         log.info("getParticipationRequestsFromUser method, parameters userId = {}, eventId = {}", userId, eventId);
         return new ResponseEntity<>(privateEventService.getParticipationRequestsFromUser(userId, eventId), HttpStatus.OK);
     }
 
     @PatchMapping("/{eventId}/requests")
-    public ResponseEntity<List<ParticipationRequestStatusUpdateResult>> processParticipationRequestsByEventInitiator(
-            @PathVariable("userId") @Min(1) Long userId,
-            @PathVariable("eventId") @Min(1) Long eventId,
-            @RequestBody @Validated ParticipationRequestStatusUpdateRequest participationRequestStatusUpdateRequest,
+    public ResponseEntity<EventRequestStatusUpdateResult> processParticipationRequestsByEventInitiator(
+            @PathVariable("userId") Long userId,
+            @PathVariable("eventId") Long eventId,
+            @RequestBody @Validated EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest,
             BindingResult errors) {
         checkErrors(errors);
-        log.info("processParticipationRequestsByEventInitiator method, parameters userId = {}, eventId = {}", userId, eventId);
-        return new ResponseEntity<>(privateEventService.processParticipationRequestsByEventInitiator(userId,
-                eventId,
-                participationRequestStatusUpdateRequest), HttpStatus.OK);
+        log.info("processParticipationRequestsByEventInitiator method, parameters userId = {}, eventId = {}, " +
+                "eventRequestStatusUpdateRequest = {}", userId, eventId, eventRequestStatusUpdateRequest);
+        return new ResponseEntity<>(privateEventService.processParticipationRequestsByEventInitiator(userId, eventId,
+                eventRequestStatusUpdateRequest), HttpStatus.OK);
     }
 
     private void checkErrors(BindingResult errors) {

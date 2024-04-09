@@ -5,16 +5,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.ewmService.event.validation.NotBlankNullable;
 
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
-import java.util.List;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateCompilationRequest {
-    //Изменение информации о подборке событий. Если поле в запросе не указано (равно null) - значит изменение этих данных не треубется.
-    private List<Long> events;
+    private Set<Long> events;
 
     private Boolean pinned;
 

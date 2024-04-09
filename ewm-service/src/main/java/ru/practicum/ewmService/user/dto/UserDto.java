@@ -14,14 +14,10 @@ import javax.validation.constraints.Size;
 public class UserDto {
     private Long id;
 
-    @NotBlank
-    @Size(min = 6, max = 254, message = "Минимальное количество символов в электронной почте пользователя - 6, " +
-            "максимальное - 254, пожалуйста, проверьте правильность указанных данных")
+
     private String name;
 
-    @Email
-    @Size(min = 2, max = 250, message = "Минимальное количество символов имени пользователя - 2, " +
-            "максимальное - 250, пожалуйста, проверьте правильность указанных данных")
+
     private String email;
 
 }

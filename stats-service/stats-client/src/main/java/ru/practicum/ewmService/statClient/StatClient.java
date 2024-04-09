@@ -1,44 +1,57 @@
 package ru.practicum.ewmService.statClient;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.RestTemplateBuilder;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.statsDto.NewStatsDto;
+import ru.practicum.statsDto.StatsParamsDto;
 import ru.practicum.statsDto.StatsToUserDto;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class StatClient {
 
     private final RestTemplate restTemplate;
+    private final String serverUrl = "http://stats-service:9090";
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    @Autowired
-    public StatClient(@Value("${stats-service.url}") String serverUrl, RestTemplateBuilder builder) {
-        this.restTemplate = builder
-                .uriTemplateHandler(new DefaultUriBuilderFactory(serverUrl))
-                .requestFactory(HttpComponentsClientHttpRequestFactory::new)
-                .build();
-    }
 
     public StatsToUserDto postStats(NewStatsDto newStatsDto) {
         HttpEntity<NewStatsDto> requestEntity = new HttpEntity<>(newStatsDto, defaultHeaders());
-        return restTemplate.postForObject("/hit", requestEntity, StatsToUserDto.class);
+        return restTemplate.postForObject(serverUrl + "/hit", requestEntity, StatsToUserDto.class);
     }
 
-/*
-    public List<StatsDtoToUser> getStats(NewStatsDto newStatsDto) {
-        StatsDtoToUserList response = restTemplate.getForObject("uri", StatsDtoToUserList.class);
-        return response.getStatsToUserDtoList();
+    public List<StatsToUserDto> getStats(StatsParamsDto statsParamsDto) {
+        String url;
+        Map<String, Object> params;
+        if (statsParamsDto.getUris() == null) {
+            url = serverUrl + "/stats?start={start}&end={end}&unique={unique}";
+            params = Map.of(
+                    "start", getEncodedAndFormattedTime(statsParamsDto.getStart()),
+                    "end", getEncodedAndFormattedTime(statsParamsDto.getEnd()),
+                    "unique", statsParamsDto.isUnique());
+        } else {
+            url = serverUrl + "/stats?start={start}&end={end}&uris={uris}&unique={unique}";
+            params = Map.of(
+                    "start", getEncodedAndFormattedTime(statsParamsDto.getStart()),
+                    "end", getEncodedAndFormattedTime(statsParamsDto.getEnd()),
+                    "uris", getUrisAsString(statsParamsDto.getUris()),
+                    "unique", statsParamsDto.isUnique());
+        }
+        StatsToUserDto[] result = restTemplate.getForObject(url, StatsToUserDto[].class, params);
+        return Arrays.asList(result);
     }
-*/
 
     private HttpHeaders defaultHeaders() {
         HttpHeaders headers = new HttpHeaders();
@@ -47,5 +60,11 @@ public class StatClient {
         return headers;
     }
 
+    private String getUrisAsString(List<String> uris) {
+        return String.join(",", uris);
+    }
 
+    private String getEncodedAndFormattedTime(LocalDateTime time) {
+        return URLEncoder.encode(time.format(formatter), StandardCharsets.UTF_8);
+    }
 }

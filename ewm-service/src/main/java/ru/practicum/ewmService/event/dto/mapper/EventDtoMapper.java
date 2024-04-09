@@ -2,17 +2,16 @@ package ru.practicum.ewmService.event.dto.mapper;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import ru.practicum.ewmService.category.Category;
 import ru.practicum.ewmService.category.dto.mapper.CategoryDtoMapper;
 import ru.practicum.ewmService.event.Event;
 import ru.practicum.ewmService.event.dto.EventFullDto;
 import ru.practicum.ewmService.event.dto.EventShortDto;
 import ru.practicum.ewmService.event.dto.NewEventDto;
-import ru.practicum.ewmService.user.User;
 import ru.practicum.ewmService.user.dto.mapper.UserDtoMapper;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -24,13 +23,12 @@ public class EventDtoMapper {
     public Event toEvent(NewEventDto newEventDto) {
         Event event = new Event();
         event.setAnnotation(newEventDto.getAnnotation());
-        //event.setCategory(newEventDto.getCategory());
         event.setDescription(newEventDto.getDescription());
         event.setEventDate(newEventDto.getEventDate());
         event.setLocation(newEventDto.getLocation());
-        event.setPaid(newEventDto.getPaid());
+        event.setPaid(newEventDto.isPaid());
         event.setParticipantLimit(newEventDto.getParticipantLimit());
-        event.setRequestModeration(newEventDto.getRequestModeration());
+        event.setRequestModeration(newEventDto.isRequestModeration());
         event.setTitle(newEventDto.getTitle());
         return event;
     }
@@ -44,39 +42,39 @@ public class EventDtoMapper {
         eventFullDto.setDescription(event.getDescription());
         eventFullDto.setEventDate(event.getEventDate());
         eventFullDto.setLocation(event.getLocation());
-        eventFullDto.setPaid(event.getPaid());
+        eventFullDto.setPaid(event.isPaid());
         eventFullDto.setParticipantLimit(event.getParticipantLimit());
         eventFullDto.setPublishedOn(event.getPublishedOn());
-        eventFullDto.setRequestModeration(event.getRequestModeration());
+        eventFullDto.setRequestModeration(event.isRequestModeration());
         eventFullDto.setState(event.getState());
         eventFullDto.setTitle(event.getTitle());
         eventFullDto.setViews(views);
         eventFullDto.setCategory(categoryDtoMapper.toCategoryDto(event.getCategory()));
         eventFullDto.setInitiator(userDtoMapper.toUserShortDto(event.getInitiator()));
+        eventFullDto.setViews(views);
         return eventFullDto;
     }
 
-    public EventShortDto toEventShortDto(Event event, Category category, User initiator, long views) {
+    public EventShortDto toEventShortDto(Event event, long views) {
         EventShortDto eventShortDto = new EventShortDto();
         eventShortDto.setId(event.getId());
         eventShortDto.setAnnotation(event.getAnnotation());
         eventShortDto.setConfirmedRequests(event.getConfirmedRequests());
         eventShortDto.setEventDate(event.getEventDate());
-        eventShortDto.setPaid(event.getPaid());
+        eventShortDto.setPaid(event.isPaid());
         eventShortDto.setTitle(event.getTitle());
         eventShortDto.setViews(views);
-        eventShortDto.setCategory(categoryDtoMapper.toCategoryDto(category));
-        eventShortDto.setInitiator(userDtoMapper.toUserShortDto(initiator));
+        eventShortDto.setCategory(categoryDtoMapper.toCategoryDto(event.getCategory()));
+        eventShortDto.setInitiator(userDtoMapper.toUserShortDto(event.getInitiator()));
+        eventShortDto.setViews(views);
         return eventShortDto;
     }
 
-/*    public List<EventShortDto> toEventShortDtoList(List<Event> events, List<Long> views) {
+    public List<EventShortDto> toEventShortDtoList(List<Event> events, Map<Long, Long> views) {
+        return events.stream().map(event -> toEventShortDto(event, views.get(event.getId()))).collect(Collectors.toList());
+    }
 
-
-
-        List<EventShortDto> eventShortDtoList = new ArrayList<>();
-        for (Event event : events) {
-            eventShortDtoList.add(toEventShortDto(event, ));
-        }
-    }*/
+    public List<EventFullDto> toEventFullDtoList(List<Event> events, Map<Long, Long> views) {
+        return events.stream().map(event -> toEventFullDto(event, views.get(event.getId()))).collect(Collectors.toList());
+    }
 }

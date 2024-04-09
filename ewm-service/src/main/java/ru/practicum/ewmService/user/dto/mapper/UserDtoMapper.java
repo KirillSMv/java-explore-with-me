@@ -3,15 +3,16 @@ package ru.practicum.ewmService.user.dto.mapper;
 import org.springframework.stereotype.Component;
 import ru.practicum.ewmService.event.dto.EventFullDto;
 import ru.practicum.ewmService.user.User;
+import ru.practicum.ewmService.user.dto.NewUserRequest;
 import ru.practicum.ewmService.user.dto.UserDto;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class UserDtoMapper {
 
-    public User toUser(UserDto userDto) {
+    public User toUser(NewUserRequest userDto) {
         User user = new User();
         user.setName(userDto.getName());
         user.setEmail(userDto.getEmail());
@@ -23,11 +24,7 @@ public class UserDtoMapper {
     }
 
     public List<UserDto> toUserDtoList(List<User> users) {
-        List<UserDto> userDtoList = new ArrayList<>();
-        for (User user : users) {
-            userDtoList.add(toUserDto(user));
-        }
-        return userDtoList;
+        return users.stream().map(this::toUserDto).collect(Collectors.toList());
     }
 
     public EventFullDto.UserShortDto toUserShortDto(User user) {

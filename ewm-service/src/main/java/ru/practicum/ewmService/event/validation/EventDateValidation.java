@@ -1,6 +1,6 @@
 package ru.practicum.ewmService.event.validation;
 
-import ru.practicum.ewmService.user.exception.InvalidEventDateException;
+import ru.practicum.ewmService.exceptions.InvalidEventDateException;
 
 import javax.validation.Constraint;
 import javax.validation.Payload;

@@ -1,11 +1,14 @@
 package ru.practicum.ewmService.compilation;
 
+import lombok.Data;
 import ru.practicum.ewmService.event.Event;
 
 import javax.persistence.*;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+@Data
 @Entity
 @Table(name = "compilations")
 public class Compilation {
@@ -19,9 +22,9 @@ public class Compilation {
 
     @ManyToMany
     @JoinTable(
-            name = "event_compilation",
+            name = "events_compilations",
             joinColumns = @JoinColumn(name = "compilation_id"),
             inverseJoinColumns = @JoinColumn(name = "event_id")
     )
-    private Set<Event> events;
+    private List<Event> events;
 }

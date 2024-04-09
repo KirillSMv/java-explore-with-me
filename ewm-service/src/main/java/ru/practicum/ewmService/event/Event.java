@@ -37,17 +37,17 @@ public class Event {
     private Category category;
 
     @Column(name = "confirmed_requests")
-    private Long confirmedRequests = 0L;
+    private long confirmedRequests = 0;
 
     @Column(name = "event_date")
-    private LocalDateTime eventDate; //String
+    private LocalDateTime eventDate;
 
     @Column(name = "created_on")
-    private LocalDateTime createdOn = LocalDateTime.now(); //String
+    private LocalDateTime createdOn = LocalDateTime.now();
 
     @Nullable
     @Column(name = "published_on")
-    private LocalDateTime publishedOn; //String
+    private LocalDateTime publishedOn;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", referencedColumnName = "id")
@@ -55,16 +55,16 @@ public class Event {
     private User initiator;
 
     @Column(name = "paid")
-    private Boolean paid;
+    private boolean paid;
 
     @Column(name = "request_moderation")
-    private Boolean requestModeration;
+    private boolean requestModeration;
 
     @Enumerated(EnumType.STRING)
     private EventState state = EventState.PENDING;
 
     @Column(name = "participant_limit")
-    private Integer participantLimit;
+    private int participantLimit;
 
     @Embedded
     Location location;

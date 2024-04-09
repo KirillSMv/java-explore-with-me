@@ -5,10 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.ewmService.exceptions.ObjectNotFoundException;
 import ru.practicum.ewmService.user.User;
+import ru.practicum.ewmService.user.dto.NewUserRequest;
 import ru.practicum.ewmService.user.dto.UserDto;
 import ru.practicum.ewmService.user.dto.mapper.UserDtoMapper;
-import ru.practicum.ewmService.user.exception.ObjectNotFoundException;
+import ru.practicum.ewmService.user.service.interfaces.AdminUserService;
 import ru.practicum.ewmService.user.storage.UserRepository;
 
 import java.util.List;
@@ -24,14 +26,9 @@ public class AdminUserServiceImpl implements AdminUserService {
 
     @Transactional
     @Override
-    public UserDto addUser(UserDto userDto) {
-        User user = userDtoMapper.toUser(userDto);
-        log.info("user = {}", user);
-        User savedUser = userRepository.save(user);
-        log.info("savedUser = {}", savedUser);
-        UserDto savedUserDto = userDtoMapper.toUserDto(savedUser);
-        log.info("savedUserDto = {}", savedUserDto);
-        return savedUserDto;
+    public UserDto addUser(NewUserRequest userDto) {
+        User savedUser = userRepository.save(userDtoMapper.toUser(userDto));
+        return userDtoMapper.toUserDto(savedUser);
     }
 
     @Override
