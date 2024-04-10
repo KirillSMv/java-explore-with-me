@@ -23,27 +23,27 @@ import java.util.Map;
 public class StatClient {
     /*
     Клиента я поменял, тот какой-то был слишком мудреный для этих двух эндоинтов, которые по факту у нас есть)
+
      */
     private final RestTemplate restTemplate;
-    private final String serverUrl = "http://stats-service:9090"; //todo можно записать сразу в сам REST
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public StatsToUserDto postStats(NewStatsDto newStatsDto) {
         HttpEntity<NewStatsDto> requestEntity = new HttpEntity<>(newStatsDto, defaultHeaders());
-        return restTemplate.postForObject(serverUrl + "/hit", requestEntity, StatsToUserDto.class);
+        return restTemplate.postForObject("/hit", requestEntity, StatsToUserDto.class);
     }
 
     public List<StatsToUserDto> getStats(StatsParamsDto statsParamsDto) {
         String url;
         Map<String, Object> params;
         if (statsParamsDto.getUris() == null) {
-            url = serverUrl + "/stats?start={start}&end={end}&unique={unique}";
+            url = "/stats?start={start}&end={end}&unique={unique}";
             params = Map.of(
                     "start", getEncodedAndFormattedTime(statsParamsDto.getStart()),
                     "end", getEncodedAndFormattedTime(statsParamsDto.getEnd()),
                     "unique", statsParamsDto.isUnique());
         } else {
-            url = serverUrl + "/stats?start={start}&end={end}&uris={uris}&unique={unique}";
+            url = "/stats?start={start}&end={end}&uris={uris}&unique={unique}";
             params = Map.of(
                     "start", getEncodedAndFormattedTime(statsParamsDto.getStart()),
                     "end", getEncodedAndFormattedTime(statsParamsDto.getEnd()),

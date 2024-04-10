@@ -82,55 +82,6 @@ public class PrivateEventServiceImpl implements PrivateEventService {
             return new ArrayList<>();
         }
         return getEventShortDtoListWithStatistic(events);
-
-        /*List<Event> notPublishedEvents = new ArrayList<>();
-        List<Event> publishedEvents = new ArrayList<>();
-        LocalDateTime earliestPublicationDate = LocalDateTime.MIN;
-        for (Event event : events) {
-            if (event.getState() == EventState.PUBLISHED) {
-                publishedEvents.add(event);
-                if (event.getPublishedOn() != null && event.getPublishedOn().isAfter(earliestPublicationDate)) {
-                    earliestPublicationDate = event.getPublishedOn();
-                }
-            } else {
-                notPublishedEvents.add(event);
-            }
-        }
-        log.info("notPublishedEvents = {}", notPublishedEvents);
-        log.info("publishedEvents = {}", publishedEvents);
-
-        Map<Long, Long> eventIdViewsMap = new HashMap<>();
-        for (Event notPublishedEvent : notPublishedEvents) {
-            eventIdViewsMap.put(notPublishedEvent.getId(), 0L);
-        }
-
-        if (publishedEvents.isEmpty()) {
-            return eventDtoMapper.toEventShortDtoList(events, eventIdViewsMap).stream().sorted(Comparator.comparing(EventShortDto::getEventDate)).collect(Collectors.toList());
-        }
-
-
-        Map<String, Long> eventIdUriMap = new HashMap<>();
-        for (Event publishedEvent : publishedEvents) {
-            eventIdUriMap.put("/events/" + publishedEvent.getId(), publishedEvent.getId());
-        }
-
-        StatsParamsDto statsParamsDto = new StatsParamsDto(earliestPublicationDate, LocalDateTime.now(), new ArrayList<>(eventIdUriMap.keySet()), false);
-        List<StatsToUserDto> statsList = statsRecordingService.getStats(statsParamsDto);
-        log.info("statsList = {}", statsList);
-
-        for (StatsToUserDto statsToUserDto : statsList) {
-            String uri = statsToUserDto.getUri();
-            Long hits = statsToUserDto.getHits();
-            Long eventId = eventIdUriMap.get(uri);
-            eventIdViewsMap.put(eventId, hits);
-        }
-        for (Long eventId : eventIdUriMap.values()) {
-            if (!eventIdViewsMap.containsKey(eventId)) {
-                eventIdViewsMap.put(eventId, 0L);
-            }
-        }
-        return eventDtoMapper.toEventShortDtoList(events, eventIdViewsMap).stream().sorted(Comparator.comparingLong(EventShortDto::getViews)).collect(Collectors.toList());
-    */
     }
 
     @Override
@@ -170,15 +121,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
             log.info("Event with id {} could not be found", eventId);
             return new ObjectNotFoundException("The required object was not found.", String.format("Event with id=%d was not found", eventId));
         });
-        if (event.getState() == EventState.PUBLISHED) {
-            log.info("Event with EventState = PUBLISHED cannot be updated");
-            throw new EventUpdatingException("For the requested operation the conditions are not met.", "Only pending or cancelled events can be changed");
-        }
-        if (updateEventUserRequest.getStateAction() != EventStateAction.CANCEL_REVIEW && updateEventUserRequest.getStateAction() != EventStateAction.SEND_TO_REVIEW) {
-            log.info("User cannot change state of event other than cancel it or send for review");
-            throw new EventUpdatingException("For the requested operation the conditions are not met.",
-                    "User cannot change state of event other than cancel it or send for review");
-        }
+        checkExceptionalCasesWhenUpdateEvent(event, updateEventUserRequest);
         Event updatedEvent = updateEventFields(event, updateEventUserRequest);
         return eventDtoMapper.toEventFullDto(updatedEvent, 0L);
     }
@@ -205,63 +148,43 @@ public class PrivateEventServiceImpl implements PrivateEventService {
             log.info("User with id {} could not be found", userId);
             return new ObjectNotFoundException("The required object was not found.", String.format("User with id=%d was not found", userId));
         });
-
         Event event = eventRepository.findById(eventId).orElseThrow(() -> {
             log.info("Event with id {} could not be found", eventId);
             return new ObjectNotFoundException("The required object was not found.", String.format("Event with id=%d was not found", eventId));
         });
-        if (event.getParticipantLimit() == 0 || !event.isRequestModeration()) {
-            log.info("Event does not require participation requests approval. ParticipantLimit = {}, isRequestModeration = {}",
-                    event.getParticipantLimit(), event.isRequestModeration());
-            throw new ParticipationRequestProcessingException("Event does not require participation requests approval",
-                    String.format("Event does not require participation requests approval. ParticipantLimit = %d, isRequestModeration = %s",
-                            event.getParticipantLimit(), event.isRequestModeration()));
-        }
-        if (event.getConfirmedRequests() == event.getParticipantLimit()) {
-            log.info("For the requested operation the conditions are not met. ParticipantLimit = {}, ConfirmedRequests = {}",
-                    event.getParticipantLimit(), event.getConfirmedRequests());
-            throw new ParticipationRequestProcessingException("For the requested operation the conditions are not met.",
-                    "The participant limit has been reached");
-        }
+        checkExceptionalCasesWhenProcessRequests(event);
+
         List<ParticipationRequest> participationRequestList = participationRequestRepository.findAllById(eventRequestStatusUpdateRequest.getRequestIds());
-        log.info("eventRequestStatusUpdateRequest.getRequestIds() = {}", eventRequestStatusUpdateRequest.getRequestIds());
-        log.info("participationRequestList = {}", participationRequestList);
         boolean isStatusPending = participationRequestList.stream().allMatch(participationRequest -> participationRequest.getStatus() == RequestState.PENDING);
         if (!isStatusPending) {
             log.info("Not all participation requests have status Pending");
             throw new CustomValidationException("Incorrectly made request.", "Request must have status PENDING");
         }
 
-        long confirmedRequests = event.getConfirmedRequests();
-        long participantLimit = event.getParticipantLimit();
         List<ParticipationRequest> confirmedParticipationRequests = new ArrayList<>();
         List<ParticipationRequest> rejectedParticipationRequests = new ArrayList<>();
-
-        if (confirmedRequests + participationRequestList.size() > participantLimit) {
-            int oversizeForRequests = (int) (participantLimit - confirmedRequests + participationRequestList.size());
-            confirmedParticipationRequests = participationRequestList.subList(0, oversizeForRequests);
-            rejectedParticipationRequests = participationRequestList.subList(oversizeForRequests, participationRequestList.size());
-            for (ParticipationRequest participationRequest : confirmedParticipationRequests) {
-                participationRequest.setStatus(RequestState.CONFIRMED);
+        if (eventRequestStatusUpdateRequest.getStatus() == RequestState.CONFIRMED) {
+            if (event.getConfirmedRequests() + participationRequestList.size() > event.getParticipantLimit()) {
+                int oversizeForRequests = (int) (event.getParticipantLimit() - event.getConfirmedRequests() + participationRequestList.size());
+                confirmedParticipationRequests = processConfirmedParticipationRequests(participationRequestList, oversizeForRequests);
+                rejectedParticipationRequests = processRejectedParticipationRequests(participationRequestList, oversizeForRequests);
+            } else {
+                for (ParticipationRequest participationRequest : participationRequestList) {
+                    participationRequest.setStatus(RequestState.CONFIRMED);
+                    confirmedParticipationRequests.add(participationRequest);
+                }
             }
-            for (ParticipationRequest participationRequest : rejectedParticipationRequests) {
-                participationRequest.setStatus(RequestState.REJECTED);
-            }
-        } else {
+            participationRequestRepository.saveAll(participationRequestList);
+            updateEventConfirmedRequests(event, confirmedParticipationRequests.size());
+        } else if (eventRequestStatusUpdateRequest.getStatus() == RequestState.REJECTED) {
             for (ParticipationRequest participationRequest : participationRequestList) {
-                participationRequest.setStatus(RequestState.CONFIRMED);
-                confirmedParticipationRequests.add(participationRequest);
+                participationRequest.setStatus(RequestState.REJECTED);
+                rejectedParticipationRequests.add(participationRequest);
             }
+            participationRequestRepository.saveAll(participationRequestList);
         }
-        log.info("participationRequestList = {}", participationRequestList);
-        log.info("confirmedParticipationRequests = {}", confirmedParticipationRequests);
-        log.info("rejectedParticipationRequests = {}", rejectedParticipationRequests);
-
-        participationRequestRepository.saveAll(participationRequestList);
-        updateEventConfirmedRequests(event, confirmedParticipationRequests.size());
         return participationRequestMapper.toEventRequestStatusUpdateResult(confirmedParticipationRequests, rejectedParticipationRequests);
     }
-
 
     @Override
     @Transactional
@@ -277,21 +200,28 @@ public class PrivateEventServiceImpl implements PrivateEventService {
 
     @Override
     public List<EventShortDto> getEventShortDtoListWithStatistic(List<Event> events) {
-
         Map<Long, Long> eventIdViewsMap = getEventIdViewsMap(events);
         if (eventIdViewsMap.values().stream().allMatch(value -> value.equals(0L))) {
-            return eventDtoMapper.toEventShortDtoList(events, eventIdViewsMap).stream().sorted(Comparator.comparing(EventShortDto::getEventDate)).collect(Collectors.toList());
+            return eventDtoMapper.toEventShortDtoList(events, eventIdViewsMap).stream()
+                    .sorted(Comparator.comparing(EventShortDto::getEventDate))
+                    .collect(Collectors.toList());
         }
-        return eventDtoMapper.toEventShortDtoList(events, eventIdViewsMap).stream().sorted(Comparator.comparingLong(EventShortDto::getViews)).collect(Collectors.toList());
+        return eventDtoMapper.toEventShortDtoList(events, eventIdViewsMap).stream()
+                .sorted(Comparator.comparingLong(EventShortDto::getViews))
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<EventFullDto> getEventFullDtoList(List<Event> events) {
         Map<Long, Long> eventIdViewsMap = getEventIdViewsMap(events);
         if (eventIdViewsMap.values().stream().allMatch(value -> value.equals(0L))) {
-            return eventDtoMapper.toEventFullDtoList(events, eventIdViewsMap).stream().sorted(Comparator.comparing(EventFullDto::getEventDate)).collect(Collectors.toList());
+            return eventDtoMapper.toEventFullDtoList(events, eventIdViewsMap).stream()
+                    .sorted(Comparator.comparing(EventFullDto::getEventDate))
+                    .collect(Collectors.toList());
         }
-        return eventDtoMapper.toEventFullDtoList(events, eventIdViewsMap).stream().sorted(Comparator.comparingLong(EventFullDto::getViews)).collect(Collectors.toList());
+        return eventDtoMapper.toEventFullDtoList(events, eventIdViewsMap).stream()
+                .sorted(Comparator.comparingLong(EventFullDto::getViews))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -325,6 +255,21 @@ public class PrivateEventServiceImpl implements PrivateEventService {
         return processPublishedEvents(earliestPublicationDate, eventIdViewsMap, publishedEvents);
     }
 
+    private void checkExceptionalCasesWhenProcessRequests(Event event) {
+        if (event.getParticipantLimit() == 0 || !event.isRequestModeration()) {
+            log.info("Event does not require participation requests approval. ParticipantLimit = {}, isRequestModeration = {}",
+                    event.getParticipantLimit(), event.isRequestModeration());
+            throw new ParticipationRequestProcessingException("Event does not require participation requests approval",
+                    String.format("Event does not require participation requests approval. ParticipantLimit = %d, isRequestModeration = %s",
+                            event.getParticipantLimit(), event.isRequestModeration()));
+        }
+        if (event.getConfirmedRequests() == event.getParticipantLimit()) {
+            log.info("For the requested operation the conditions are not met. ParticipantLimit = {}, ConfirmedRequests = {}",
+                    event.getParticipantLimit(), event.getConfirmedRequests());
+            throw new ParticipationRequestProcessingException("For the requested operation the conditions are not met.",
+                    "The participant limit has been reached");
+        }
+    }
 
     private Map<Long, Long> processPublishedEvents(LocalDateTime earliestPublicationDate,
                                                    Map<Long, Long> eventIdViewsMap, List<Event> publishedEvents) {
@@ -352,31 +297,6 @@ public class PrivateEventServiceImpl implements PrivateEventService {
         return eventIdViewsMap;
     }
 
-
-/*    private List<EventShortDto> processPublishedEvents(List<Event> events, LocalDateTime earliestPublicationDate,
-                                                       Map<Long, Long> eventIdViewsMap, List<Event> publishedEvents) {
-        Map<String, Long> eventIdUriMap = new HashMap<>();
-        for (Event publishedEvent : publishedEvents) {
-            eventIdUriMap.put("/events/" + publishedEvent.getId(), publishedEvent.getId());
-        }
-
-        StatsParamsDto statsParamsDto = new StatsParamsDto(earliestPublicationDate, LocalDateTime.now(), new ArrayList<>(eventIdUriMap.keySet()), false);
-        List<StatsToUserDto> statsList = statsRecordingService.getStats(statsParamsDto);
-        log.info("statsList = {}", statsList);
-
-        for (StatsToUserDto statsToUserDto : statsList) {
-            String uri = statsToUserDto.getUri();
-            Long hits = statsToUserDto.getHits();
-            Long eventId = eventIdUriMap.get(uri);
-            eventIdViewsMap.put(eventId, hits);
-        }
-        for (Long eventId : eventIdUriMap.values()) {
-            if (!eventIdViewsMap.containsKey(eventId)) {
-                eventIdViewsMap.put(eventId, 0L);
-            }
-        }
-        return eventDtoMapper.toEventShortDtoList(events, eventIdViewsMap).stream().sorted(Comparator.comparingLong(EventShortDto::getViews)).collect(Collectors.toList());
-    }*/
 
     private List<StatsToUserDto> makeClientRequest(Event event) {
         LocalDateTime start = event.getPublishedOn();
@@ -411,5 +331,35 @@ public class PrivateEventServiceImpl implements PrivateEventService {
             }
         }
         return event;
+    }
+
+    private List<ParticipationRequest> processRejectedParticipationRequests(List<ParticipationRequest> participationRequestList,
+                                                                            int oversizeForRequests) {
+        List<ParticipationRequest> rejectedParticipationRequests = participationRequestList.subList(oversizeForRequests, participationRequestList.size());
+        for (ParticipationRequest participationRequest : rejectedParticipationRequests) {
+            participationRequest.setStatus(RequestState.REJECTED);
+        }
+        return rejectedParticipationRequests;
+    }
+
+    private List<ParticipationRequest> processConfirmedParticipationRequests(List<ParticipationRequest> participationRequestList,
+                                                                             int oversizeForRequests) {
+        List<ParticipationRequest> confirmedParticipationRequests = participationRequestList.subList(0, oversizeForRequests);
+        for (ParticipationRequest participationRequest : confirmedParticipationRequests) {
+            participationRequest.setStatus(RequestState.CONFIRMED);
+        }
+        return confirmedParticipationRequests;
+    }
+
+    private void checkExceptionalCasesWhenUpdateEvent(Event event, UpdateEventUserRequest updateEventUserRequest) {
+        if (event.getState() == EventState.PUBLISHED) {
+            log.info("Event with EventState = PUBLISHED cannot be updated");
+            throw new EventUpdatingException("For the requested operation the conditions are not met.", "Only pending or cancelled events can be changed");
+        }
+        if (updateEventUserRequest.getStateAction() != EventStateAction.CANCEL_REVIEW && updateEventUserRequest.getStateAction() != EventStateAction.SEND_TO_REVIEW) {
+            log.info("User cannot change state of event other than cancel it or send for review");
+            throw new EventUpdatingException("For the requested operation the conditions are not met.",
+                    "User cannot change state of event other than cancel it or send for review");
+        }
     }
 }
