@@ -8,7 +8,7 @@ import ru.practicum.ewmService.compilation.dto.NewCompilationDto;
 import ru.practicum.ewmService.event.dto.EventShortDto;
 import ru.practicum.ewmService.event.dto.mapper.EventDtoMapper;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -28,21 +28,31 @@ public class CompilationDtoMapper {
 
     public CompilationDto toCompilationDto(Compilation compilation, List<EventShortDto> eventShortDtoList) {
         return new CompilationDto(compilation.getId(),
-                new HashSet<>(eventShortDtoList), compilation.isPinned(), compilation.getTitle());
+                new ArrayList<>(eventShortDtoList), compilation.isPinned(), compilation.getTitle());
     }
 
-    public List<CompilationDto> toCompilationDtoList(List<Compilation> compilations, ) {
-
-        compilations.stream().map(comp -> {
-            eventDtoMapper.toEventShortDtoList(comp.getEvents())
-            toCompilationDto(comp)
-        }).collect(Collectors.toList());
+    public List<CompilationDto> toCompilationDtoList(List<Compilation> compilations, Map<Long, EventShortDto> eventShortDtoMap, Map<Long, List<Long>> eventsIdMap) {
+        List<CompilationDto> compilationDtoList = compilations.stream().map(this::toCompilationDtoWithEmptyEvents).collect(Collectors.toList());
+        return compilationDtoList.stream()
+                .peek(comp -> comp.setEvents(getEventShortDtos(comp.getId(), eventsIdMap, eventShortDtoMap))).collect(Collectors.toList());
     }
 
-    public void test(Map<Long, Compilation> compilationMap, Map<Long, EventShortDto> eventShortDtoMap, Map<Long, List<Long>> eventsIdMap) {
-
-        for (Long list : eventsIdMap.values()) {
-
+    private List<EventShortDto> getEventShortDtos(Long compId,
+                                                  Map<Long, List<Long>> compIdToEventIds,
+                                                  Map<Long, EventShortDto> eventIdToEventDto) {
+        List<Long> eventIds = compIdToEventIds.get(compId);
+        List<EventShortDto> dtos = new ArrayList<>();
+        for (Long id : eventIds) {
+            dtos.add(eventIdToEventDto.get(id));
         }
+        return dtos;
+    }
+
+    private CompilationDto toCompilationDtoWithEmptyEvents(Compilation compilation) {
+        CompilationDto compilationDto = new CompilationDto();
+        compilationDto.setId(compilation.getId());
+        compilationDto.setTitle(compilation.getTitle());
+        compilationDto.setPinned(compilation.isPinned());
+        return compilationDto;
     }
 }

@@ -20,7 +20,6 @@ import ru.practicum.ewmService.user.User;
 import ru.practicum.ewmService.user.storage.UserRepository;
 
 import java.util.List;
-import java.util.Objects;
 
 @Service
 @Slf4j
@@ -53,7 +52,7 @@ public class PrivateParticipationRequestServiceImpl implements PrivateParticipat
         participationRequest.setEvent(event);
         participationRequest.setRequester(user);
 
-        if (!event.isRequestModeration()) {
+        if (!event.isRequestModeration() || event.getParticipantLimit() == 0) {
             participationRequest.setStatus(RequestState.CONFIRMED);
         }
 
@@ -113,9 +112,11 @@ public class PrivateParticipationRequestServiceImpl implements PrivateParticipat
             throw new ParticipationRequestProcessingException("Participation requirements were not met",
                     "Participation request cannot be sent for not published event");
         }
-        if (Objects.equals(event.getConfirmedRequests(), Long.valueOf(event.getParticipantLimit()))) {
-            throw new ParticipationRequestProcessingException("Participation requirements were not met",
-                    "Participants limit has been met");
+        if (event.getParticipantLimit() != 0) {
+            if (event.getConfirmedRequests() == event.getParticipantLimit()) {
+                throw new ParticipationRequestProcessingException("Participation requirements were not met",
+                        "Participants limit has been met");
+            }
         }
     }
 }

@@ -18,7 +18,10 @@ import ru.practicum.ewmService.event.service.interfaces.AdminEventService;
 import ru.practicum.ewmService.exceptions.CustomValidationException;
 
 import javax.validation.constraints.Min;
+import java.time.LocalDateTime;
 import java.util.List;
+
+import static ru.practicum.ewmService.Constants.TIME_PATTERN;
 
 @RestController
 @Slf4j
@@ -48,11 +51,34 @@ public class AdminEventController {
         log.info("getEvents method, parameters: users = {}, states = {}, categories = {}, rangeStart = {}, " +
                         "rangeEnd = {}, from = {}, size = {}", users, states,
                 categories, rangeStart, rangeEnd, from, size);
-        List<EventState> eventStatesList = EventState.convertToEventState(states);
-
-        List<EventFullDto> eventFullDtoList = adminEventService.getEventsBySearch(new SearchParametersAdminRequest(users, eventStatesList,
-                categories, rangeStart, rangeEnd, PageRequest.of(from / size, size)));
+        SearchParametersAdminRequest searchParametersAdminRequest = checkParameters(users, states, categories, rangeStart, rangeEnd, from, size);
+        List<EventFullDto> eventFullDtoList = adminEventService.getEventsBySearch(searchParametersAdminRequest);
         return new ResponseEntity<>(eventFullDtoList, HttpStatus.OK);
+    }
+
+    private SearchParametersAdminRequest checkParameters(List<Long> users, List<String> states, List<Long> categories,
+                                                         String rangeStart, String rangeEnd, Integer from, Integer size) {
+        List<EventState> eventStatesList = null;
+        if (states != null) {
+            eventStatesList = EventState.convertToEventState(states);
+        }
+        LocalDateTime rangeStartTime = null;
+        if (rangeStart != null) {
+            rangeStartTime = LocalDateTime.parse(rangeStart, TIME_PATTERN);
+        }
+        LocalDateTime rangeEndTime = null;
+        if (rangeEnd != null) {
+            rangeEndTime = LocalDateTime.parse(rangeEnd, TIME_PATTERN);
+        }
+        if (rangeStartTime != null && rangeEndTime != null) {
+            if (rangeEndTime.isBefore(rangeStartTime)) {
+                throw new CustomValidationException("Incorrect parameters set",
+                        String.format("rangeEnd cannot be earlier than rangeStart. rangeStart = %s, rangeEnd = %s", rangeStart, rangeEnd));
+            }
+        }
+        return new SearchParametersAdminRequest(users, eventStatesList, categories, rangeStartTime, rangeEndTime, PageRequest.of(from / size, size));
+
+
     }
 
     private void checkErrors(BindingResult errors) {

@@ -24,8 +24,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
-import static ru.practicum.ewmService.Constants.TIME_PATTERN;
-
 @Service
 @Slf4j
 @Transactional(readOnly = true)
@@ -67,10 +65,10 @@ public class AdminEventServiceImpl implements AdminEventService {
             booleanBuilder.and(qEvent.category.id.in(searchParametersAdminRequest.getCategories()));
         }
         if (searchParametersAdminRequest.getRangeStart() != null) {
-            booleanBuilder.and(qEvent.eventDate.after(LocalDateTime.parse(searchParametersAdminRequest.getRangeStart(), TIME_PATTERN)));
+            booleanBuilder.and(qEvent.eventDate.after(searchParametersAdminRequest.getRangeStart()));
         }
         if (searchParametersAdminRequest.getRangeEnd() != null) {
-            booleanBuilder.and(qEvent.eventDate.before(LocalDateTime.parse(searchParametersAdminRequest.getRangeEnd(), TIME_PATTERN)));
+            booleanBuilder.and(qEvent.eventDate.before(searchParametersAdminRequest.getRangeEnd()));
         }
         return booleanBuilder;
     }

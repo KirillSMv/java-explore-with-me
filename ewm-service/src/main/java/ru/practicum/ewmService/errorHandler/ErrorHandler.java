@@ -78,7 +78,7 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handle(final EventUpdatingException e) {
         log.error("EventUpdatingException: {}", e.getMessage());
         return new ErrorResponse("FORBIDDEN", e.getReason(), e.getMessage(), e.getTimestamp().format(TIME_PATTERN));
@@ -92,10 +92,10 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handle(final EventAdminUpdateException e) {
         log.error("EventAdminUpdateException: {}", e.getMessage());
-        return new ErrorResponse("FORBIDDEN", e.getReason(), e.getMessage(), e.getTimestamp().format(TIME_PATTERN));
+        return new ErrorResponse("CONFLICT", e.getReason(), e.getMessage(), e.getTimestamp().format(TIME_PATTERN));
     }
 
 /*    @ExceptionHandler
@@ -120,10 +120,10 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handle(final IncorrectEventStateException e) {
         log.error("EventAdminUpdateException: {}", e.getMessage());
-        return new ErrorResponse("FORBIDDEN", e.getReason(), e.getMessage(), e.getTimestamp().format(TIME_PATTERN));
+        return new ErrorResponse("NOT_FOUND", e.getReason(), e.getMessage(), e.getTimestamp().format(TIME_PATTERN));
     }
 
 }

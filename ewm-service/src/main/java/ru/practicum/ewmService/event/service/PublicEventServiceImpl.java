@@ -39,6 +39,7 @@ public class PublicEventServiceImpl implements PublicEventService {
         List<Event> eventsList = eventRepository.findAll(getPredicate(searchParametersPublicRequest),
                 searchParametersPublicRequest.getPageable()).getContent();
 
+
         if (searchParametersPublicRequest.getSortOption() == SortOption.EVENT_DATE) {
             return privateEventService.getEventShortDtoListWithStatistic(eventsList).stream()
                     .sorted(Comparator.comparing(EventShortDto::getEventDate)).collect(Collectors.toList());

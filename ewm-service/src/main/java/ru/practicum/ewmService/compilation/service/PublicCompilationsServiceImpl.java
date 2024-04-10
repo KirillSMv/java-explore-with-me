@@ -13,11 +13,13 @@ import ru.practicum.ewmService.compilation.storage.CompilationRepository;
 import ru.practicum.ewmService.event.Event;
 import ru.practicum.ewmService.event.dto.EventShortDto;
 import ru.practicum.ewmService.event.service.interfaces.PrivateEventService;
+import ru.practicum.ewmService.exceptions.ObjectNotFoundException;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,7 +33,7 @@ public class PublicCompilationsServiceImpl implements PublicCompilationsService 
 
 
     @Override
-    public CompilationDto getCompilations(boolean pinnedOnly, Pageable pageable) {
+    public List<CompilationDto> getCompilations(boolean pinnedOnly, Pageable pageable) {
         List<Compilation> compilations;
         if (pinnedOnly) {
             compilations = compilationRepository.findAllByPinned(true, pageable);
@@ -39,44 +41,33 @@ public class PublicCompilationsServiceImpl implements PublicCompilationsService 
             compilations = compilationRepository.findAll(pageable).getContent();
         }
         log.info("compilations = {}", compilations);
-
-
-        List<Long> compilationsId = compilations.stream().map(Compilation::getId).collect(Collectors.toList());
-
-/*        List<Event> events = compilations.stream()
+        List<Event> events = compilations.stream()
                 .map(Compilation::getEvents)
                 .flatMap(Collection::stream)
-                .collect(Collectors.toList());*/
-        List<Event> events = new ArrayList<>();
-        for (Compilation compilation : compilations) {
-            events.add(compilation.getEvents());
-        }
-
+                .distinct()
+                .collect(Collectors.toList());
         log.info("eventsId = {}", events);
 
         List<EventShortDto> eventShortDtoList = privateEventService.getEventShortDtoListWithStatistic(events);
-        Map<Long, List<EventShortDto>> eventIdToEventDto = eventShortDtoList.stream().collect(Collectors.groupingBy(EventShortDto::getId));
-
-        Map<Long, List<Long>> compIdToEventIds = compilations.stream().collect(Collectors.groupingBy(Compilation::);
+        log.info("eventShortDtoList = {}", eventShortDtoList);
 
 
-        Map<Long, List<Long>> compIdToEventIds
+        Map<Long, EventShortDto> eventIdToEventDtoMap = eventShortDtoList.stream().collect(Collectors.toMap(EventShortDto::getId, eventShortDto -> eventShortDto));
 
-        List<Event> q
-
+        Map<Long, List<Long>> compIdToEventIds = new HashMap<>();
+        for (Compilation compilation : compilations) {
+            List<Long> eventsIds = compilation.getEvents().stream().map(Event::getId).collect(Collectors.toList());
+            compIdToEventIds.put(compilation.getId(), eventsIds);
+        }
+        return compilationDtoMapper.toCompilationDtoList(compilations, eventIdToEventDtoMap, compIdToEventIds);
     }
-
-
-        return compilationDtoMapper.toCompilationDto(compilations);
-
-
-        return null;
-}
 
     @Override
     public CompilationDto getCompilationById(Long compId) {
-
-
-        return null;
+        Compilation compilation = compilationRepository.findById(compId).orElseThrow(() -> {
+            log.error("Compilation with id {} not found", compId);
+            return new ObjectNotFoundException("The required object was not found.", String.format("Compilation with id=%d was not found", compId));
+        });
+        return compilationDtoMapper.toCompilationDto(compilation, privateEventService.getEventShortDtoListWithStatistic(compilation.getEvents()));
     }
 }

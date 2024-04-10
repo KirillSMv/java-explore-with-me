@@ -3,10 +3,8 @@ package ru.practicum.ewmService.compilation.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.ewmService.event.validation.NotBlankNullable;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.Set;
 
@@ -19,7 +17,7 @@ public class NewCompilationDto {
 
     private boolean pinned;
 
-    @NotBlankNullable
+    @NotBlank
     @Size(min = 1, max = 50, message = "Минимальное количество символов в подборке событий - 1, " +
             "максимальное - 50, пожалуйста, проверьте правильность указанных данных")
     private String title;

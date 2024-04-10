@@ -17,7 +17,6 @@ import ru.practicum.ewmService.event.service.interfaces.PrivateEventService;
 import ru.practicum.ewmService.exceptions.ObjectNotFoundException;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 @Service
@@ -38,7 +37,7 @@ public class AdminCompilationsServiceImpl implements AdminCompilationsService {
 
         Compilation savedCompilation;
         List<EventShortDto> eventShortDtoList = new ArrayList<>();
-        if (newCompilationDto.getEvents().isEmpty()) {
+        if (newCompilationDto.getEvents() == null) {
             compilation.setEvents(new ArrayList<>());
             savedCompilation = compilationRepository.save(compilation);
         } else {
@@ -68,7 +67,7 @@ public class AdminCompilationsServiceImpl implements AdminCompilationsService {
             return new ObjectNotFoundException("The required object was not found.", String.format("Compilation with id=%d was not found", compId));
         });
         List<EventShortDto> eventShortDtoList = new ArrayList<>();
-        if (!updateCompilationRequest.getEvents().isEmpty()) {
+        if (updateCompilationRequest.getEvents() != null) {
             List<Event> events = privateEventService.finalAllById(new ArrayList<>(updateCompilationRequest.getEvents()));
             compilation.setEvents(events);
             eventShortDtoList = privateEventService.getEventShortDtoListWithStatistic(events);

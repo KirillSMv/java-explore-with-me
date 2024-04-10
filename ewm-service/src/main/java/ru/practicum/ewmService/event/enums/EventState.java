@@ -9,6 +9,7 @@ public enum EventState {
     CANCELED;
 
     public static List<EventState> convertToEventState(List<String> states) {
+
         List<EventState> eventStatesList = new ArrayList<>();
         for (String state : states) {
             EventState convertedState = null;

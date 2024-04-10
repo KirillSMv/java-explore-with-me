@@ -33,7 +33,6 @@ public interface PrivateEventService {
     void updateEventConfirmedRequests(Event event, long value);
 
 
-
     List<EventShortDto> getEventShortDtoListWithStatistic(List<Event> events);
 
     List<Event> finalAllById(List<Long> eventsIds);

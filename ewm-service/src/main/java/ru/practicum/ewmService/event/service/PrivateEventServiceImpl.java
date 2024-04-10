@@ -170,13 +170,14 @@ public class PrivateEventServiceImpl implements PrivateEventService {
             log.info("Event with id {} could not be found", eventId);
             return new ObjectNotFoundException("The required object was not found.", String.format("Event with id=%d was not found", eventId));
         });
-        if (event.getState() != EventState.PENDING && event.getState() != EventState.CANCELED) {
-            log.info("Event with EventState.PUBLISHED cannot be updated");
-            throw new EventUpdatingException("For the requested operation the conditions are not met.", "Only pending or canceled events can be changed");
+        if (event.getState() == EventState.PUBLISHED) {
+            log.info("Event with EventState = PUBLISHED cannot be updated");
+            throw new EventUpdatingException("For the requested operation the conditions are not met.", "Only pending or cancelled events can be changed");
         }
-        if (updateEventUserRequest.getStateAction() != null & updateEventUserRequest.getStateAction() != EventStateAction.CANCEL_REVIEW) {
-            log.info("User cannot change state of event other than cancel it");
-            throw new EventUpdatingException("For the requested operation the conditions are not met.", "User cannot change state of event other than cancel it");
+        if (updateEventUserRequest.getStateAction() != EventStateAction.CANCEL_REVIEW && updateEventUserRequest.getStateAction() != EventStateAction.SEND_TO_REVIEW) {
+            log.info("User cannot change state of event other than cancel it or send for review");
+            throw new EventUpdatingException("For the requested operation the conditions are not met.",
+                    "User cannot change state of event other than cancel it or send for review");
         }
         Event updatedEvent = updateEventFields(event, updateEventUserRequest);
         return eventDtoMapper.toEventFullDto(updatedEvent, 0L);
@@ -276,6 +277,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
 
     @Override
     public List<EventShortDto> getEventShortDtoListWithStatistic(List<Event> events) {
+
         Map<Long, Long> eventIdViewsMap = getEventIdViewsMap(events);
         if (eventIdViewsMap.values().stream().allMatch(value -> value.equals(0L))) {
             return eventDtoMapper.toEventShortDtoList(events, eventIdViewsMap).stream().sorted(Comparator.comparing(EventShortDto::getEventDate)).collect(Collectors.toList());
@@ -312,10 +314,11 @@ public class PrivateEventServiceImpl implements PrivateEventService {
         log.info("publishedEvents = {}", publishedEvents);
 
         Map<Long, Long> eventIdViewsMap = new HashMap<>();
-        for (Event notPublishedEvent : notPublishedEvents) {
-            eventIdViewsMap.put(notPublishedEvent.getId(), 0L);
+        if (!notPublishedEvents.isEmpty()) {
+            for (Event notPublishedEvent : notPublishedEvents) {
+                eventIdViewsMap.put(notPublishedEvent.getId(), 0L);
+            }
         }
-
         if (publishedEvents.isEmpty()) {
             return eventIdViewsMap;
         }
@@ -330,7 +333,8 @@ public class PrivateEventServiceImpl implements PrivateEventService {
             eventIdUriMap.put("/events/" + publishedEvent.getId(), publishedEvent.getId());
         }
 
-        StatsParamsDto statsParamsDto = new StatsParamsDto(earliestPublicationDate, LocalDateTime.now(), new ArrayList<>(eventIdUriMap.keySet()), false);
+        StatsParamsDto statsParamsDto = new StatsParamsDto(earliestPublicationDate, LocalDateTime.now(),
+                new ArrayList<>(eventIdUriMap.keySet()), false);
         List<StatsToUserDto> statsList = statsRecordingService.getStats(statsParamsDto);
         log.info("statsList = {}", statsList);
 
@@ -377,7 +381,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
     private List<StatsToUserDto> makeClientRequest(Event event) {
         LocalDateTime start = event.getPublishedOn();
         String uri = "/events/" + event.getId();
-        StatsParamsDto statsParamsDto = new StatsParamsDto(start, LocalDateTime.now(), List.of(uri), false);
+        StatsParamsDto statsParamsDto = new StatsParamsDto(start, LocalDateTime.now(), List.of(uri), true);
         return statsRecordingService.getStats(statsParamsDto);
     }
 
@@ -390,7 +394,10 @@ public class PrivateEventServiceImpl implements PrivateEventService {
         event.setParticipantLimit(Objects.requireNonNullElse(updateEventUserRequest.getParticipantLimit(), event.getParticipantLimit()));
         event.setRequestModeration(Objects.requireNonNullElse(updateEventUserRequest.getRequestModeration(), event.isRequestModeration()));
         event.setTitle(Objects.requireNonNullElse(updateEventUserRequest.getTitle(), event.getTitle()));
-        if (updateEventUserRequest.getStateAction() != null) {
+        if (updateEventUserRequest.getStateAction() == EventStateAction.SEND_TO_REVIEW) {
+            event.setState(EventState.PENDING);
+        }
+        if (updateEventUserRequest.getStateAction() == EventStateAction.CANCEL_REVIEW) {
             event.setState(EventState.CANCELED);
         }
         Long newCategoryId = updateEventUserRequest.getCategory();
