@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import ru.practicum.ewmService.user.model.User;
 
 import java.util.List;
+
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
