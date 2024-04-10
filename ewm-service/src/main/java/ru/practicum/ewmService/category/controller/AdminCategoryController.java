@@ -29,14 +29,14 @@ public class AdminCategoryController {
 
     @PatchMapping("/{catId}")
     public ResponseEntity<CategoryDto> updateCategory(@RequestBody @Valid CategoryDto categoryDto,
-                                                      @PathVariable("catId") @Min(value  = 1) Long catId) {
+                                                      @PathVariable("catId") @Min(value = 1) Long catId) {
         log.info("deleteCategory method, categoryId = {}", catId);
         return new ResponseEntity<>(adminCategoryService.updateCategory(categoryDto, catId), HttpStatus.OK);
     }
 
 
     @DeleteMapping("/{catId}")
-    public ResponseEntity<String> deleteCategory(@PathVariable("catId") @Min(value  = 1) Long catId) {
+    public ResponseEntity<String> deleteCategory(@PathVariable("catId") @Min(value = 1) Long catId) {
         log.info("deleteCategory method, categoryId = {}", catId);
         adminCategoryService.deleteCategory(catId);
         return new ResponseEntity<>("Категория удалена", HttpStatus.NO_CONTENT);

@@ -5,7 +5,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class CategoryProcessingException extends RuntimeException{
+public class CategoryProcessingException extends RuntimeException {
 
     private String reason;
     private LocalDateTime timestamp = java.time.LocalDateTime.now();

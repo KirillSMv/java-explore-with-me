@@ -13,7 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SearchParametersPublicRequest {
-    private  String text;
+    private String text;
     private List<Long> categories;
     private boolean isPaid;
     private LocalDateTime rangeStart;

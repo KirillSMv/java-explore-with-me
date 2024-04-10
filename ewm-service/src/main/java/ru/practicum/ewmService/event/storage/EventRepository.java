@@ -11,7 +11,7 @@ import ru.practicum.ewmService.user.User;
 import java.util.List;
 
 @Repository
-public interface EventRepository extends JpaRepository<Event, Long> , QuerydslPredicateExecutor<Event> {
+public interface EventRepository extends JpaRepository<Event, Long>, QuerydslPredicateExecutor<Event> {
 
     List<Event> findAllByInitiator(User user, Pageable pageable);
 

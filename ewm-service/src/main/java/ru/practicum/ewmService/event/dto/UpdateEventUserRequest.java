@@ -10,7 +10,6 @@ import ru.practicum.ewmService.event.validation.EventDateValidation;
 import ru.practicum.ewmService.event.validation.NotBlankNullable;
 
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 

@@ -15,13 +15,11 @@ import ru.practicum.ewmService.event.dto.EventShortDto;
 import ru.practicum.ewmService.event.dto.NewEventDto;
 import ru.practicum.ewmService.event.dto.UpdateEventUserRequest;
 import ru.practicum.ewmService.event.service.interfaces.PrivateEventService;
-import ru.practicum.ewmService.event.service.interfaces.StatsRecordingService;
 import ru.practicum.ewmService.exceptions.CustomValidationException;
 import ru.practicum.ewmService.request.dto.EventRequestStatusUpdateRequest;
 import ru.practicum.ewmService.request.dto.EventRequestStatusUpdateResult;
 import ru.practicum.ewmService.request.dto.ParticipationRequestDto;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.Min;
 import java.util.List;
 

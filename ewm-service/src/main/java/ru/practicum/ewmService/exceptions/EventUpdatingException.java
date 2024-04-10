@@ -3,6 +3,7 @@ package ru.practicum.ewmService.exceptions;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+
 @Getter
 public class EventUpdatingException extends RuntimeException {
     private String reason;

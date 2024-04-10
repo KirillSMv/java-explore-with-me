@@ -13,4 +13,4 @@ public enum SortOption {
         }
         return Optional.empty();
     }
-    }
+}

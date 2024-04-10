@@ -5,8 +5,6 @@ import ru.practicum.ewmService.event.Event;
 
 import javax.persistence.*;
 import java.util.List;
-import java.util.Locale;
-import java.util.Set;
 
 @Data
 @Entity
