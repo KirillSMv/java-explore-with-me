@@ -6,10 +6,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewmService.exceptions.ObjectNotFoundException;
-import ru.practicum.ewmService.user.User;
 import ru.practicum.ewmService.user.dto.NewUserRequest;
 import ru.practicum.ewmService.user.dto.UserDto;
 import ru.practicum.ewmService.user.dto.mapper.UserDtoMapper;
+import ru.practicum.ewmService.user.model.User;
 import ru.practicum.ewmService.user.service.interfaces.AdminUserService;
 import ru.practicum.ewmService.user.storage.UserRepository;
 
@@ -48,7 +48,8 @@ public class AdminUserServiceImpl implements AdminUserService {
     public void deleteUser(Long userId) {
         userRepository.findById(userId).orElseThrow(() -> {
             log.error("User with id {} not found", userId);
-            return new ObjectNotFoundException("The required object was not found.", String.format("User with id=%d was not found", userId));
+            return new ObjectNotFoundException("The required object was not found.",
+                    String.format("User with id=%d was not found", userId));
         });
         userRepository.deleteById(userId);
     }
@@ -57,7 +58,8 @@ public class AdminUserServiceImpl implements AdminUserService {
     public UserDto getUserById(Long userId) {
         User savedUser = userRepository.findById(userId).orElseThrow(() -> {
             log.error("User with id {} not found", userId);
-            return new ObjectNotFoundException("The required object was not found.", String.format("User with id=%d was not found", userId));
+            return new ObjectNotFoundException("The required object was not found.",
+                    String.format("User with id=%d was not found", userId));
         });
         return userDtoMapper.toUserDto(savedUser);
     }

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.ewmService.event.Location;
+import ru.practicum.ewmService.event.model.Location;
 import ru.practicum.ewmService.event.validation.EventDateValidation;
 
 import javax.validation.constraints.Min;

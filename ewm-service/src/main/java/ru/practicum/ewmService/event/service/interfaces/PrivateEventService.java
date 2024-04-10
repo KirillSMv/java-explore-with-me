@@ -1,11 +1,11 @@
 package ru.practicum.ewmService.event.service.interfaces;
 
 import org.springframework.data.domain.Pageable;
-import ru.practicum.ewmService.event.Event;
 import ru.practicum.ewmService.event.dto.EventFullDto;
 import ru.practicum.ewmService.event.dto.EventShortDto;
 import ru.practicum.ewmService.event.dto.NewEventDto;
 import ru.practicum.ewmService.event.dto.UpdateEventUserRequest;
+import ru.practicum.ewmService.event.model.Event;
 import ru.practicum.ewmService.request.dto.EventRequestStatusUpdateRequest;
 import ru.practicum.ewmService.request.dto.EventRequestStatusUpdateResult;
 import ru.practicum.ewmService.request.dto.ParticipationRequestDto;

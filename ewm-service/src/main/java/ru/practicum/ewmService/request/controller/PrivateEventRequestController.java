@@ -39,6 +39,4 @@ public class PrivateEventRequestController {
         return new ResponseEntity<>(privateParticipationRequestService.cancelOwnParticipationRequest(userId, requestId),
                 HttpStatus.OK);
     }
-
-
 }

@@ -61,7 +61,8 @@ public class AdminUserController {
             for (ObjectError error : errors.getAllErrors()) {
                 if (error instanceof FieldError) {
                     FieldError fieldError = (FieldError) error;
-                    throw new CustomValidationException("Error:" + fieldError.getField() + error.getDefaultMessage(), "Incorrectly made request.");
+                    throw new CustomValidationException("Error:" + fieldError.getField() + error.getDefaultMessage(),
+                            "Incorrectly made request.");
                 }
                 throw new CustomValidationException(error.getDefaultMessage(), "Incorrectly made request.");
             }

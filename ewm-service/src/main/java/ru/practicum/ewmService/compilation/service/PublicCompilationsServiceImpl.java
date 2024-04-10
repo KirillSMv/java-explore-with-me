@@ -5,13 +5,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.ewmService.compilation.Compilation;
 import ru.practicum.ewmService.compilation.dto.CompilationDto;
 import ru.practicum.ewmService.compilation.dto.mapper.CompilationDtoMapper;
+import ru.practicum.ewmService.compilation.model.Compilation;
 import ru.practicum.ewmService.compilation.service.interfaces.PublicCompilationsService;
 import ru.practicum.ewmService.compilation.storage.CompilationRepository;
-import ru.practicum.ewmService.event.Event;
 import ru.practicum.ewmService.event.dto.EventShortDto;
+import ru.practicum.ewmService.event.model.Event;
 import ru.practicum.ewmService.event.service.interfaces.PrivateEventService;
 import ru.practicum.ewmService.exceptions.ObjectNotFoundException;
 
@@ -51,7 +51,8 @@ public class PublicCompilationsServiceImpl implements PublicCompilationsService 
         log.info("eventShortDtoList = {}", eventShortDtoList);
 
 
-        Map<Long, EventShortDto> eventIdToEventDtoMap = eventShortDtoList.stream().collect(Collectors.toMap(EventShortDto::getId, eventShortDto -> eventShortDto));
+        Map<Long, EventShortDto> eventIdToEventDtoMap = eventShortDtoList.stream()
+                .collect(Collectors.toMap(EventShortDto::getId, eventShortDto -> eventShortDto));
 
         Map<Long, List<Long>> compIdToEventIds = new HashMap<>();
         for (Compilation compilation : compilations) {
@@ -65,8 +66,10 @@ public class PublicCompilationsServiceImpl implements PublicCompilationsService 
     public CompilationDto getCompilationById(Long compId) {
         Compilation compilation = compilationRepository.findById(compId).orElseThrow(() -> {
             log.error("Compilation with id {} not found", compId);
-            return new ObjectNotFoundException("The required object was not found.", String.format("Compilation with id=%d was not found", compId));
+            return new ObjectNotFoundException("The required object was not found.",
+                    String.format("Compilation with id=%d was not found", compId));
         });
-        return compilationDtoMapper.toCompilationDto(compilation, privateEventService.getEventShortDtoListWithStatistic(compilation.getEvents()));
+        return compilationDtoMapper.toCompilationDto(compilation,
+                privateEventService.getEventShortDtoListWithStatistic(compilation.getEvents()));
     }
 }

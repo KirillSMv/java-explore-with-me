@@ -21,7 +21,7 @@ import javax.validation.constraints.Min;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static ru.practicum.ewmService.Constants.TIME_PATTERN;
+import static ru.practicum.ewmService.constans.Constants.TIME_PATTERN;
 
 @RestController
 @Slf4j
@@ -77,8 +77,6 @@ public class AdminEventController {
             }
         }
         return new SearchParametersAdminRequest(users, eventStatesList, categories, rangeStartTime, rangeEndTime, PageRequest.of(from / size, size));
-
-
     }
 
     private void checkErrors(BindingResult errors) {
@@ -92,5 +90,4 @@ public class AdminEventController {
             }
         }
     }
-
 }

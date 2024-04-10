@@ -3,10 +3,10 @@ package ru.practicum.ewmService.event.dto.mapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.practicum.ewmService.category.dto.mapper.CategoryDtoMapper;
-import ru.practicum.ewmService.event.Event;
 import ru.practicum.ewmService.event.dto.EventFullDto;
 import ru.practicum.ewmService.event.dto.EventShortDto;
 import ru.practicum.ewmService.event.dto.NewEventDto;
+import ru.practicum.ewmService.event.model.Event;
 import ru.practicum.ewmService.user.dto.mapper.UserDtoMapper;
 
 import java.util.List;

@@ -1,8 +1,8 @@
 package ru.practicum.ewmService.category.dto.mapper;
 
 import org.springframework.stereotype.Component;
-import ru.practicum.ewmService.category.Category;
 import ru.practicum.ewmService.category.dto.CategoryDto;
+import ru.practicum.ewmService.category.model.Category;
 
 import java.util.List;
 import java.util.stream.Collectors;

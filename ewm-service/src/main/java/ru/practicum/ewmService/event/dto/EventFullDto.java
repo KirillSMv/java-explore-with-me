@@ -5,8 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.ewmService.category.dto.CategoryDto;
-import ru.practicum.ewmService.event.Location;
 import ru.practicum.ewmService.event.enums.EventState;
+import ru.practicum.ewmService.event.model.Location;
 
 import java.time.LocalDateTime;
 

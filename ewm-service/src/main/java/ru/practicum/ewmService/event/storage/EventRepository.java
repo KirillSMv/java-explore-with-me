@@ -4,9 +4,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.stereotype.Repository;
-import ru.practicum.ewmService.category.Category;
-import ru.practicum.ewmService.event.Event;
-import ru.practicum.ewmService.user.User;
+import ru.practicum.ewmService.category.model.Category;
+import ru.practicum.ewmService.event.model.Event;
+import ru.practicum.ewmService.user.model.User;
 
 import java.util.List;
 

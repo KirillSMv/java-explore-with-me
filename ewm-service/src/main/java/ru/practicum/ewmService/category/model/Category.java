@@ -1,4 +1,4 @@
-package ru.practicum.ewmService.category;
+package ru.practicum.ewmService.category.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

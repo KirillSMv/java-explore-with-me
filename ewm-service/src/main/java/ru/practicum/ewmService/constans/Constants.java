@@ -1,4 +1,4 @@
-package ru.practicum.ewmService;
+package ru.practicum.ewmService.constans;
 
 import java.time.format.DateTimeFormatter;
 

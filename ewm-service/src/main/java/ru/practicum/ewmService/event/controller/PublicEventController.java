@@ -21,8 +21,8 @@ import javax.validation.constraints.Min;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static ru.practicum.ewmService.Constants.APP;
-import static ru.practicum.ewmService.Constants.TIME_PATTERN;
+import static ru.practicum.ewmService.constans.Constants.APP;
+import static ru.practicum.ewmService.constans.Constants.TIME_PATTERN;
 
 @RestController
 @Slf4j

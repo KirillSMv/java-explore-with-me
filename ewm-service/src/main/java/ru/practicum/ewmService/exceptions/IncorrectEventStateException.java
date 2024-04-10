@@ -1,10 +1,10 @@
 package ru.practicum.ewmService.exceptions;
 
-import lombok.Data;
+import lombok.Getter;
 
 import java.time.LocalDateTime;
 
-@Data
+@Getter
 public class IncorrectEventStateException extends RuntimeException {
     private String reason;
     private LocalDateTime timestamp = LocalDateTime.now();

@@ -1,4 +1,4 @@
-package ru.practicum.ewmService.event;
+package ru.practicum.ewmService.event.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,7 +7,7 @@ import lombok.ToString;
 import org.springframework.lang.Nullable;
 import ru.practicum.ewmService.category.model.Category;
 import ru.practicum.ewmService.event.enums.EventState;
-import ru.practicum.ewmService.user.User;
+import ru.practicum.ewmService.user.model.User;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;

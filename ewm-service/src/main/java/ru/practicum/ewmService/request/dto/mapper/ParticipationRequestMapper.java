@@ -1,9 +1,9 @@
 package ru.practicum.ewmService.request.dto.mapper;
 
 import org.springframework.stereotype.Component;
-import ru.practicum.ewmService.request.ParticipationRequest;
 import ru.practicum.ewmService.request.dto.EventRequestStatusUpdateResult;
 import ru.practicum.ewmService.request.dto.ParticipationRequestDto;
+import ru.practicum.ewmService.request.model.ParticipationRequest;
 
 import java.util.List;
 import java.util.stream.Collectors;

@@ -1,12 +1,12 @@
-package ru.practicum.ewmService.request;
+package ru.practicum.ewmService.request.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import ru.practicum.ewmService.event.Event;
+import ru.practicum.ewmService.event.model.Event;
 import ru.practicum.ewmService.request.enums.RequestState;
-import ru.practicum.ewmService.user.User;
+import ru.practicum.ewmService.user.model.User;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;

@@ -1,5 +1,8 @@
 package ru.practicum.ewmService.exceptions;
 
+import lombok.Getter;
+
+@Getter
 public class ObjectNotFoundException extends RuntimeException {
     String reason;
 

@@ -2,9 +2,9 @@ package ru.practicum.ewmService.user.dto.mapper;
 
 import org.springframework.stereotype.Component;
 import ru.practicum.ewmService.event.dto.EventFullDto;
-import ru.practicum.ewmService.user.User;
 import ru.practicum.ewmService.user.dto.NewUserRequest;
 import ru.practicum.ewmService.user.dto.UserDto;
+import ru.practicum.ewmService.user.model.User;
 
 import java.util.List;
 import java.util.stream.Collectors;

@@ -1,4 +1,4 @@
-package ru.practicum.ewmService.event;
+package ru.practicum.ewmService.event.model;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

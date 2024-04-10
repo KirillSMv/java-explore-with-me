@@ -2,9 +2,9 @@ package ru.practicum.ewmService.compilation.dto.mapper;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import ru.practicum.ewmService.compilation.Compilation;
 import ru.practicum.ewmService.compilation.dto.CompilationDto;
 import ru.practicum.ewmService.compilation.dto.NewCompilationDto;
+import ru.practicum.ewmService.compilation.model.Compilation;
 import ru.practicum.ewmService.event.dto.EventShortDto;
 import ru.practicum.ewmService.event.dto.mapper.EventDtoMapper;
 
