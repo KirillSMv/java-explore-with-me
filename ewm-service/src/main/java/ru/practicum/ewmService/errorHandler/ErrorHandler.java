@@ -3,6 +3,7 @@ package ru.practicum.ewmService.errorHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingPathVariableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -95,6 +96,14 @@ public class ErrorHandler {
         log.error("Throwable:", e);
         return new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(), "Internal error", e.getMessage(), LocalDateTime.now().format(TIME_PATTERN));
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handle(final MissingPathVariableException e) {
+        log.error("MissingPathVariableException:", e);
+        return new ErrorResponse(e.getStackTrace().toString(), e.getLocalizedMessage(), e.getMessage(), LocalDateTime.now().format(TIME_PATTERN));
+    }
+
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
