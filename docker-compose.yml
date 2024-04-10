@@ -1,9 +1,11 @@
 version: '3.1'
 
+
 services:
   stats-service:
     container_name: stats-service
-    build: stats-service/stats-server
+    build:
+      context: ./stats-service/stats-server
     ports:
       - "9090:9090"
     environment:
@@ -12,6 +14,8 @@ services:
       - SPRING_DATASOURCE_PASSWORD=eravur
     depends_on:
       - stats-db
+      - ewm-service
+
 
   stats-db:
     container_name: stats-db
@@ -29,16 +33,18 @@ services:
 
   ewm-service:
     container_name: ewm-service
-    build: ewm-service
+    build:
+      context: ./ewm-service
     ports:
       - "8080:8080"
+    depends_on:
+      - ewm-db
     environment:
+      - stats-service.url=http://stats-service:9090
       - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/ewmService
       - SPRING_DATASOURCE_USERNAME=Kirill
       - SPRING_DATASOURCE_PASSWORD=eravur
-    depends_on:
-      - ewm-db
-      - stats-service
+
 
   ewm-db:
     container_name: ewm-db
