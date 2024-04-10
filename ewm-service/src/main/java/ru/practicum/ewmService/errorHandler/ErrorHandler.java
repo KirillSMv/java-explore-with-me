@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingPathVariableException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -104,6 +105,12 @@ public class ErrorHandler {
         return new ErrorResponse(e.getStackTrace().toString(), e.getLocalizedMessage(), e.getMessage(), LocalDateTime.now().format(TIME_PATTERN));
     }
 
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handle(final MissingServletRequestParameterException e) {
+        log.error("MissingServletRequestParameterException:", e);
+        return new ErrorResponse(e.getStackTrace().toString(), e.getLocalizedMessage(), e.getMessage(), LocalDateTime.now().format(TIME_PATTERN));
+    }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
