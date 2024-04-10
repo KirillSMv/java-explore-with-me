@@ -92,13 +92,6 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handle(final Throwable e) {
-        log.error("Throwable:", e);
-        return new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(), "Internal error", e.getMessage(), LocalDateTime.now().format(TIME_PATTERN));
-    }
-
-    @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handle(final MissingPathVariableException e) {
         log.error("MissingPathVariableException:", e);

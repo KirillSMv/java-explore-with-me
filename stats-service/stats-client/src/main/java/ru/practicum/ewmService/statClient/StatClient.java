@@ -21,11 +21,12 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class StatClient {
-
+    /*
+    Клиента я поменял, тот какой-то был слишком мудреный для этих двух эндоинтов, которые по факту у нас есть)
+     */
     private final RestTemplate restTemplate;
-    private final String serverUrl = "http://stats-service:9090";
+    private final String serverUrl = "http://stats-service:9090"; //todo можно записать сразу в сам REST
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
 
     public StatsToUserDto postStats(NewStatsDto newStatsDto) {
         HttpEntity<NewStatsDto> requestEntity = new HttpEntity<>(newStatsDto, defaultHeaders());

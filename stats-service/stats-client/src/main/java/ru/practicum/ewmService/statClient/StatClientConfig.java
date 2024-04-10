@@ -10,12 +10,6 @@ public class StatClientConfig {
 
     @Bean
     public RestTemplate restTemplate() {
-
-        /*
-        DefaultUriBuilderFactory defaultUriBuilderFactory = new DefaultUriBuilderFactory();
-        defaultUriBuilderFactory.setEncodingMode(DefaultUriBuilderFactory.EncodingMode.VALUES_ONLY);
-        restTemplate.setUriTemplateHandler(defaultUriBuilderFactory);
-         */
         return new RestTemplate();
     }
 }
