@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.springframework.lang.Nullable;
-import ru.practicum.ewmService.category.Category;
+import ru.practicum.ewmService.category.model.Category;
 import ru.practicum.ewmService.event.enums.EventState;
 import ru.practicum.ewmService.user.User;
 
