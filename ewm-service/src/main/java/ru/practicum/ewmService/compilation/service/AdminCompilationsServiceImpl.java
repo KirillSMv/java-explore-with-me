@@ -53,7 +53,7 @@ public class AdminCompilationsServiceImpl implements AdminCompilationsService {
     @Transactional
     public void deleteCompilation(Long compId) {
         compilationRepository.findById(compId).orElseThrow(() -> {
-            log.info("Compilation with id {} could not be found", compId);
+            log.error("Compilation with id {} could not be found", compId);
             return new ObjectNotFoundException("The required object was not found.",
                     String.format("Compilation with id=%d was not found", compId));
         });
@@ -64,7 +64,7 @@ public class AdminCompilationsServiceImpl implements AdminCompilationsService {
     @Transactional
     public CompilationDto updateCompilation(Long compId, UpdateCompilationRequest updateCompilationRequest) {
         Compilation compilation = compilationRepository.findById(compId).orElseThrow(() -> {
-            log.info("Compilation with id {} could not be found", compId);
+            log.error("Compilation with id {} could not be found", compId);
             return new ObjectNotFoundException("The required object was not found.",
                     String.format("Compilation with id=%d was not found", compId));
         });

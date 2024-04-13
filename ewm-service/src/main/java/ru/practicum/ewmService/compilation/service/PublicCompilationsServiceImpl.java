@@ -39,17 +39,15 @@ public class PublicCompilationsServiceImpl implements PublicCompilationsService 
         } else {
             compilations = compilationRepository.findAll(pageable).getContent();
         }
-        log.info("compilations = {}", compilations);
+        log.debug("compilations size = {}", compilations.size());
         List<Event> events = compilations.stream()
                 .map(Compilation::getEvents)
                 .flatMap(Collection::stream)
                 .distinct()
                 .collect(Collectors.toList());
-        log.info("eventsId = {}", events);
 
         List<EventShortDto> eventShortDtoList = privateEventService.getEventShortDtoListWithStatistic(events);
-        log.info("eventShortDtoList = {}", eventShortDtoList);
-
+        log.debug("eventShortDtoList size = {}", eventShortDtoList.size());
 
         Map<Long, EventShortDto> eventIdToEventDtoMap = eventShortDtoList.stream()
                 .collect(Collectors.toMap(EventShortDto::getId, eventShortDto -> eventShortDto));

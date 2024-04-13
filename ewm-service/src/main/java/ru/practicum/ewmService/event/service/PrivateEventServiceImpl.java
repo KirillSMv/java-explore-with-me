@@ -56,24 +56,24 @@ public class PrivateEventServiceImpl implements PrivateEventService {
     @Transactional
     public EventFullDto addEventByUser(Long userId, NewEventDto newEventDto) {
         User user = userRepository.findById(userId).orElseThrow(() -> {
-            log.info("User with id {} could not be found", userId);
+            log.error("User with id {} could not be found", userId);
             return new ObjectNotFoundException("The required object was not found.", String.format("User with id=%d was not found", userId));
         });
         Event event = eventDtoMapper.toEvent(newEventDto);
         Category category = categoryRepository.findById(newEventDto.getCategory()).orElseThrow(() -> {
-            log.info("Category with id {} could not be found", userId);
+            log.error("Category with id {} could not be found", userId);
             return new ObjectNotFoundException("The required object was not found.", String.format("Category with id=%d was not found", newEventDto.getCategory()));
         });
         event.setCategory(category);
         event.setInitiator(user);
-        log.info("event = {}", event);
+        log.debug("event = {}", event);
         return eventDtoMapper.toEventFullDto(eventRepository.save(event), 0L);
     }
 
     @Override
     public List<EventShortDto> getEventsAddedByUser(Long userId, Pageable pageable) {
         User user = userRepository.findById(userId).orElseThrow(() -> {
-            log.info("User with id {} could not be found", userId);
+            log.error("User with id {} could not be found", userId);
             return new ObjectNotFoundException("The required object was not found.", String.format("User with id=%d was not found", userId));
         });
         List<Event> events = eventRepository.findAllByInitiator(user, pageable);
@@ -87,11 +87,11 @@ public class PrivateEventServiceImpl implements PrivateEventService {
     @Override
     public EventFullDto getDetailedEventAddedByUser(Long userId, Long eventId) {
         userRepository.findById(userId).orElseThrow(() -> {
-            log.info("User with id {} could not be found", userId);
+            log.error("User with id {} could not be found", userId);
             return new ObjectNotFoundException("The required object was not found.", String.format("User with id=%d was not found", userId));
         });
         Event event = eventRepository.findById(eventId).orElseThrow(() -> {
-            log.info("Event with id {} could not be found", eventId);
+            log.error("Event with id {} could not be found", eventId);
             return new ObjectNotFoundException("The required object was not found.", String.format("Event with id=%d was not found", eventId));
         });
         return getEventFullDtoWithStatistic(event);
@@ -103,7 +103,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
             return eventDtoMapper.toEventFullDto(event, 0L);
         }
         List<StatsToUserDto> statsList = makeClientRequest(event);
-        log.info("statsList = {}", statsList);
+        log.debug("statsList size = {}", statsList.size());
         if (statsList.isEmpty()) {
             return eventDtoMapper.toEventFullDto(event, 0L);
         }
@@ -114,11 +114,11 @@ public class PrivateEventServiceImpl implements PrivateEventService {
     @Transactional
     public EventFullDto updateEvent(Long userId, Long eventId, UpdateEventUserRequest updateEventUserRequest) {
         userRepository.findById(userId).orElseThrow(() -> {
-            log.info("User with id {} could not be found", userId);
+            log.error("User with id {} could not be found", userId);
             return new ObjectNotFoundException("The required object was not found.", String.format("User with id=%d was not found", userId));
         });
         Event event = eventRepository.findById(eventId).orElseThrow(() -> {
-            log.info("Event with id {} could not be found", eventId);
+            log.error("Event with id {} could not be found", eventId);
             return new ObjectNotFoundException("The required object was not found.", String.format("Event with id=%d was not found", eventId));
         });
         checkExceptionalCasesWhenUpdateEvent(event, updateEventUserRequest);
@@ -129,11 +129,11 @@ public class PrivateEventServiceImpl implements PrivateEventService {
     @Override
     public List<ParticipationRequestDto> getParticipationRequestsFromUser(Long userId, Long eventId) {
         userRepository.findById(userId).orElseThrow(() -> {
-            log.info("User with id {} could not be found", userId);
+            log.error("User with id {} could not be found", userId);
             return new ObjectNotFoundException("The required object was not found.", String.format("User with id=%d was not found", userId));
         });
         Event event = eventRepository.findById(eventId).orElseThrow(() -> {
-            log.info("Event with id {} could not be found", eventId);
+            log.error("Event with id {} could not be found", eventId);
             return new ObjectNotFoundException("The required object was not found.", String.format("Event with id=%d was not found", eventId));
         });
         List<ParticipationRequest> participationRequestList = participationRequestRepository.findAllByEvent(event);
@@ -145,11 +145,11 @@ public class PrivateEventServiceImpl implements PrivateEventService {
     public EventRequestStatusUpdateResult processParticipationRequestsByEventInitiator(Long userId, Long eventId,
                                                                                        EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest) {
         userRepository.findById(userId).orElseThrow(() -> {
-            log.info("User with id {} could not be found", userId);
+            log.error("User with id {} could not be found", userId);
             return new ObjectNotFoundException("The required object was not found.", String.format("User with id=%d was not found", userId));
         });
         Event event = eventRepository.findById(eventId).orElseThrow(() -> {
-            log.info("Event with id {} could not be found", eventId);
+            log.error("Event with id {} could not be found", eventId);
             return new ObjectNotFoundException("The required object was not found.", String.format("Event with id=%d was not found", eventId));
         });
         checkExceptionalCasesWhenProcessRequests(event);
@@ -157,7 +157,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
         List<ParticipationRequest> participationRequestList = participationRequestRepository.findAllById(eventRequestStatusUpdateRequest.getRequestIds());
         boolean isStatusPending = participationRequestList.stream().allMatch(participationRequest -> participationRequest.getStatus() == RequestState.PENDING);
         if (!isStatusPending) {
-            log.info("Not all participation requests have status Pending");
+            log.error("Not all participation requests have status Pending");
             throw new CustomValidationException("Incorrectly made request.", "Request must have status PENDING");
         }
 
@@ -240,8 +240,8 @@ public class PrivateEventServiceImpl implements PrivateEventService {
                 notPublishedEvents.add(event);
             }
         }
-        log.info("notPublishedEvents = {}", notPublishedEvents);
-        log.info("publishedEvents = {}", publishedEvents);
+        log.debug("notPublishedEvents size = {}", notPublishedEvents.size());
+        log.debug("publishedEvents size = {}", publishedEvents.size());
 
         Map<Long, Long> eventIdViewsMap = new HashMap<>();
         if (!notPublishedEvents.isEmpty()) {
@@ -257,14 +257,14 @@ public class PrivateEventServiceImpl implements PrivateEventService {
 
     private void checkExceptionalCasesWhenProcessRequests(Event event) {
         if (event.getParticipantLimit() == 0 || !event.isRequestModeration()) {
-            log.info("Event does not require participation requests approval. ParticipantLimit = {}, isRequestModeration = {}",
+            log.error("Event does not require participation requests approval. ParticipantLimit = {}, isRequestModeration = {}",
                     event.getParticipantLimit(), event.isRequestModeration());
             throw new ParticipationRequestProcessingException("Event does not require participation requests approval",
                     String.format("Event does not require participation requests approval. ParticipantLimit = %d, isRequestModeration = %s",
                             event.getParticipantLimit(), event.isRequestModeration()));
         }
         if (event.getConfirmedRequests() == event.getParticipantLimit()) {
-            log.info("For the requested operation the conditions are not met. ParticipantLimit = {}, ConfirmedRequests = {}",
+            log.error("For the requested operation the conditions are not met. ParticipantLimit = {}, ConfirmedRequests = {}",
                     event.getParticipantLimit(), event.getConfirmedRequests());
             throw new ParticipationRequestProcessingException("For the requested operation the conditions are not met.",
                     "The participant limit has been reached");
@@ -281,7 +281,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
         StatsParamsDto statsParamsDto = new StatsParamsDto(earliestPublicationDate, LocalDateTime.now(),
                 new ArrayList<>(eventIdUriMap.keySet()), false);
         List<StatsToUserDto> statsList = statsRecordingService.getStats(statsParamsDto);
-        log.info("statsList = {}", statsList);
+        log.debug("statsList size = {}", statsList.size());
 
         for (StatsToUserDto statsToUserDto : statsList) {
             String uri = statsToUserDto.getUri();
@@ -324,8 +324,9 @@ public class PrivateEventServiceImpl implements PrivateEventService {
         if (newCategoryId != null) {
             if (!event.getCategory().getId().equals(newCategoryId)) {
                 Category newCategory = categoryRepository.findById(newCategoryId).orElseThrow(() -> {
-                    log.info("Category with id {} could not be found", newCategoryId);
-                    return new ObjectNotFoundException("The required object was not found.", String.format("Category with id=%d was not found", newCategoryId));
+                    log.error("Category with id {} could not be found", newCategoryId);
+                    return new ObjectNotFoundException("The required object was not found.",
+                            String.format("Category with id=%d was not found", newCategoryId));
                 });
                 event.setCategory(newCategory);
             }
@@ -335,7 +336,8 @@ public class PrivateEventServiceImpl implements PrivateEventService {
 
     private List<ParticipationRequest> processRejectedParticipationRequests(List<ParticipationRequest> participationRequestList,
                                                                             int oversizeForRequests) {
-        List<ParticipationRequest> rejectedParticipationRequests = participationRequestList.subList(oversizeForRequests, participationRequestList.size());
+        List<ParticipationRequest> rejectedParticipationRequests = participationRequestList.subList(oversizeForRequests,
+                participationRequestList.size());
         for (ParticipationRequest participationRequest : rejectedParticipationRequests) {
             participationRequest.setStatus(RequestState.REJECTED);
         }
@@ -353,11 +355,13 @@ public class PrivateEventServiceImpl implements PrivateEventService {
 
     private void checkExceptionalCasesWhenUpdateEvent(Event event, UpdateEventUserRequest updateEventUserRequest) {
         if (event.getState() == EventState.PUBLISHED) {
-            log.info("Event with EventState = PUBLISHED cannot be updated");
-            throw new EventUpdatingException("For the requested operation the conditions are not met.", "Only pending or cancelled events can be changed");
+            log.error("Event with EventState = PUBLISHED cannot be updated");
+            throw new EventUpdatingException("For the requested operation the conditions are not met.",
+                    "Only pending or cancelled events can be changed");
         }
-        if (updateEventUserRequest.getStateAction() != EventStateAction.CANCEL_REVIEW && updateEventUserRequest.getStateAction() != EventStateAction.SEND_TO_REVIEW) {
-            log.info("User cannot change state of event other than cancel it or send for review");
+        if (updateEventUserRequest.getStateAction() != EventStateAction.CANCEL_REVIEW
+                && updateEventUserRequest.getStateAction() != EventStateAction.SEND_TO_REVIEW) {
+            log.error("User cannot change state of event other than cancel it or send for review");
             throw new EventUpdatingException("For the requested operation the conditions are not met.",
                     "User cannot change state of event other than cancel it or send for review");
         }

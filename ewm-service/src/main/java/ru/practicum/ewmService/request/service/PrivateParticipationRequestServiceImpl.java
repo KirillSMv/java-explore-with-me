@@ -37,12 +37,12 @@ public class PrivateParticipationRequestServiceImpl implements PrivateParticipat
     @Transactional
     public ParticipationRequestDto addParticipationRequest(Long userId, Long eventId) {
         User user = userRepository.findById(userId).orElseThrow(() -> {
-            log.info("User with id {} could not be found", userId);
+            log.error("User with id {} could not be found", userId);
             return new ObjectNotFoundException("The required object was not found.",
                     String.format("User with id=%d was not found", userId));
         });
         Event event = eventRepository.findById(eventId).orElseThrow(() -> {
-            log.info("Event with id {} could not be found", eventId);
+            log.error("Event with id {} could not be found", eventId);
             return new ObjectNotFoundException("The required object was not found.",
                     String.format("Event with id=%d was not found", eventId));
         });
@@ -57,7 +57,7 @@ public class PrivateParticipationRequestServiceImpl implements PrivateParticipat
         }
 
         ParticipationRequest savedParticipationRequest = participationRequestRepository.save(participationRequest);
-        log.info("privateParticipationRequestRepository = {}", participationRequestRepository);
+        log.debug("privateParticipationRequestRepository = {}", participationRequestRepository);
 
         if (savedParticipationRequest.getStatus() == RequestState.CONFIRMED) {
             privateEventService.updateEventConfirmedRequests(event, 1L);
@@ -68,12 +68,12 @@ public class PrivateParticipationRequestServiceImpl implements PrivateParticipat
     @Override
     public List<ParticipationRequestDto> getOwnParticipationRequests(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> {
-            log.info("User with id {} could not be found", userId);
+            log.error("User with id {} could not be found", userId);
             return new ObjectNotFoundException("The required object was not found.",
                     String.format("User with id=%d was not found", userId));
         });
         List<ParticipationRequest> requestsList = participationRequestRepository.findAllByRequester(user);
-        log.info("requestsList = {}", requestsList);
+        log.debug("requestsList size = {}", requestsList.size());
         return participationRequestMapper.toParticipationRequestDtoList(requestsList);
     }
 
@@ -81,17 +81,19 @@ public class PrivateParticipationRequestServiceImpl implements PrivateParticipat
     @Transactional
     public ParticipationRequestDto cancelOwnParticipationRequest(Long userId, Long requestId) {
         User user = userRepository.findById(userId).orElseThrow(() -> {
-            log.info("User with id {} could not be found", userId);
+            log.error("User with id {} could not be found", userId);
             return new ObjectNotFoundException("The required object was not found.",
                     String.format("User with id=%d was not found", userId));
         });
         ParticipationRequest participationRequest = participationRequestRepository
                 .findById(requestId).orElseThrow(() -> {
-                    log.info("Participation request with id {} could not be found", userId);
+                    log.error("Participation request with id {} could not be found", userId);
                     return new ObjectNotFoundException("The required object was not found.",
                             String.format("Participation request with id=%d was not found", requestId));
                 });
         if (!participationRequest.getRequester().equals(user)) {
+            log.error("Participation request cannot be cancelled by another user, requester = {}, user = {}",
+                    participationRequest.getRequester(), user);
             throw new ParticipationRequestProcessingException("Participation requirements were not met",
                     "Participation request cannot be cancelled by another user");
         }
@@ -105,15 +107,18 @@ public class PrivateParticipationRequestServiceImpl implements PrivateParticipat
 
     private void checkParticipationRequirements(Event event, Long userId) {
         if (event.getInitiator().getId().equals(userId)) {
+            log.error("Event initiator cannot send request to own Event");
             throw new ParticipationRequestProcessingException("Participation requirements were not met",
                     "Event initiator cannot send request to own Event");
         }
         if (event.getState() != EventState.PUBLISHED) {
+            log.error("Participation request cannot be sent for not published event");
             throw new ParticipationRequestProcessingException("Participation requirements were not met",
                     "Participation request cannot be sent for not published event");
         }
         if (event.getParticipantLimit() != 0) {
             if (event.getConfirmedRequests() == event.getParticipantLimit()) {
+                log.error("Participants limit has been met, limit = {}", event.getParticipantLimit());
                 throw new ParticipationRequestProcessingException("Participation requirements were not met",
                         "Participants limit has been met");
             }

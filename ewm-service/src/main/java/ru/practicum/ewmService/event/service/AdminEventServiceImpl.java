@@ -38,7 +38,7 @@ public class AdminEventServiceImpl implements AdminEventService {
     @Override
     public EventFullDto updateEventByAdmin(UpdateEventAdminRequest updateEventAdminRequest, Long eventId) {
         Event event = eventRepository.findById(eventId).orElseThrow(() -> {
-            log.info("Event with id {} could not be found", eventId);
+            log.error("Event with id {} could not be found", eventId);
             return new ObjectNotFoundException("The required object was not found.", String.format("Event with id=%d was not found", eventId));
         });
         checkUpdateRequirements(event, updateEventAdminRequest);
@@ -76,15 +76,19 @@ public class AdminEventServiceImpl implements AdminEventService {
     private void checkUpdateRequirements(Event event, UpdateEventAdminRequest updateEventAdminRequest) {
         if (updateEventAdminRequest.getStateAction() == EventStateAction.PUBLISH_EVENT) {
             if (event.getState() != EventState.PENDING) {
+                log.error("Cannot publish the event because it's not in the right state: {}", event.getState().toString());
                 throw new EventAdminUpdateException("For the requested operation the conditions are not met.",
                         String.format("Cannot publish the event because it's not in the right state: %s", event.getState().toString()));
             }
             if (LocalDateTime.now().plusHours(1).isAfter(event.getEventDate())) {
+                log.error("Event cannot be published due to its start in less than 1 hour, event.getEventDate() = {}," +
+                        " LocalDateTime.now().plusHours(1) {}", event.getEventDate(), LocalDateTime.now().plusHours(1));
                 throw new EventAdminUpdateException("For the requested operation the conditions are not met.",
                         ("Event cannot be published due to its start in less than 1 hour"));
             }
         } else if (updateEventAdminRequest.getStateAction() == EventStateAction.REJECT_EVENT) {
             if (event.getState() != EventState.PENDING) {
+                log.error("Cannot reject the event because it's not in the right state: {}", event.getState().toString());
                 throw new EventAdminUpdateException("For the requested operation the conditions are not met.",
                         String.format("Cannot reject the event because it's not in the right state: %s", event.getState().toString()));
             }
@@ -111,7 +115,7 @@ public class AdminEventServiceImpl implements AdminEventService {
         if (newCategoryId != null) {
             if (!event.getCategory().getId().equals(newCategoryId)) {
                 Category newCategory = categoryRepository.findById(newCategoryId).orElseThrow(() -> {
-                    log.info("Category with id {} could not be found", newCategoryId);
+                    log.error("Category with id {} could not be found", newCategoryId);
                     return new ObjectNotFoundException("The required object was not found.", String.format("Category with id=%d was not found", newCategoryId));
                 });
                 event.setCategory(newCategory);

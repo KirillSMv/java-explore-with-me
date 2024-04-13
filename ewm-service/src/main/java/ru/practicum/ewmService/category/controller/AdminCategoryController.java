@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewmService.category.dto.CategoryDto;
-import ru.practicum.ewmService.category.service.interfaces.AdminCategoryService;
+import ru.practicum.ewmService.category.service.interfaces.CategoryService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -19,26 +19,26 @@ import javax.validation.constraints.Min;
 @Validated
 public class AdminCategoryController {
 
-    private final AdminCategoryService adminCategoryService;
+    private final CategoryService categoryService;
 
     @PostMapping
     public ResponseEntity<CategoryDto> addCategory(@RequestBody @Valid CategoryDto categoryDto) {
         log.info("addCategory method, categoryDto = {}", categoryDto);
-        return new ResponseEntity<>(adminCategoryService.addCategory(categoryDto), HttpStatus.CREATED);
+        return new ResponseEntity<>(categoryService.addCategory(categoryDto), HttpStatus.CREATED);
     }
 
     @PatchMapping("/{catId}")
     public ResponseEntity<CategoryDto> updateCategory(@RequestBody @Valid CategoryDto categoryDto,
                                                       @PathVariable("catId") @Min(value = 1) Long catId) {
         log.info("deleteCategory method, categoryId = {}", catId);
-        return new ResponseEntity<>(adminCategoryService.updateCategory(categoryDto, catId), HttpStatus.OK);
+        return new ResponseEntity<>(categoryService.updateCategory(categoryDto, catId), HttpStatus.OK);
     }
 
 
     @DeleteMapping("/{catId}")
     public ResponseEntity<String> deleteCategory(@PathVariable("catId") @Min(value = 1) Long catId) {
         log.info("deleteCategory method, categoryId = {}", catId);
-        adminCategoryService.deleteCategory(catId);
+        categoryService.deleteCategory(catId);
         return new ResponseEntity<>("Категория удалена", HttpStatus.NO_CONTENT);
     }
 }

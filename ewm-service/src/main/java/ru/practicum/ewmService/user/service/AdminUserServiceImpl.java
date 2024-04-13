@@ -39,7 +39,7 @@ public class AdminUserServiceImpl implements AdminUserService {
         } else {
             users = userRepository.findAllPageable(pageable);
         }
-        log.info("users = {}", users);
+        log.debug("users size = {}", users.size());
         return userDtoMapper.toUserDtoList(users);
     }
 

@@ -2,22 +2,25 @@ package ru.practicum.ewmService.category.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewmService.category.dto.CategoryDto;
 import ru.practicum.ewmService.category.dto.mapper.CategoryDtoMapper;
 import ru.practicum.ewmService.category.model.Category;
-import ru.practicum.ewmService.category.service.interfaces.AdminCategoryService;
+import ru.practicum.ewmService.category.service.interfaces.CategoryService;
 import ru.practicum.ewmService.category.storage.CategoryRepository;
 import ru.practicum.ewmService.event.storage.EventRepository;
 import ru.practicum.ewmService.exceptions.CategoryProcessingException;
 import ru.practicum.ewmService.exceptions.ObjectNotFoundException;
 
+import java.util.List;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class AdminCategoryServiceImpl implements AdminCategoryService {
+public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
     private final CategoryDtoMapper categoryDtoMapper;
@@ -27,7 +30,7 @@ public class AdminCategoryServiceImpl implements AdminCategoryService {
     @Transactional
     public CategoryDto addCategory(CategoryDto categoryDto) {
         Category category = categoryDtoMapper.toCategory(categoryDto);
-        log.info("category = {}", category);
+        log.debug("category {}", category);
         return categoryDtoMapper.toCategoryDto(categoryRepository.save(category));
     }
 
@@ -56,11 +59,23 @@ public class AdminCategoryServiceImpl implements AdminCategoryService {
                     String.format("Category with id=%d was not found", catId));
         });
         category.setName(categoryDto.getName());
-        /* вот тут хочу уточнить, поскольку сущность category уже отслеживается Hibernate, то в случае сеттера сразу
-        делается запрос в БД на обноваление сущности. Нужно ли потом вызывать метод save()?
-         Я знаю, что по сути он не нужен, но в ТЗ shareIT у меня потом были проблемы с тестами при использовании мока и
-         я дополнительно добавлял этот метод. Вот хочу спросить уже окончательно решить дилемму, как правильнее сделать?
-         */
-        return categoryDtoMapper.toCategoryDto(category);
+        return categoryDtoMapper.toCategoryDto(categoryRepository.save(category));
+    }
+
+    @Override
+    public List<CategoryDto> getCategories(Pageable pageable) {
+        List<Category> categories = categoryRepository.findAllPageable(pageable);
+        log.debug("categories size = {}", categories.size());
+        return categoryDtoMapper.toCategoryDtoList(categories);
+    }
+
+    @Override
+    public CategoryDto getCategoryById(Long catId) {
+        Category savedCategory = categoryRepository.findById(catId).orElseThrow(() -> {
+            log.error("Category with id {} not found", catId);
+            return new ObjectNotFoundException("The required object was not found.",
+                    String.format("Category with id=%d was not found", catId));
+        });
+        return categoryDtoMapper.toCategoryDto(savedCategory);
     }
 }

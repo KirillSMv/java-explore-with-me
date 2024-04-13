@@ -51,11 +51,11 @@ public class PublicEventServiceImpl implements PublicEventService {
     @Override
     public EventFullDto getEventById(Long eventId) {
         Event event = eventRepository.findById(eventId).orElseThrow(() -> {
-            log.info("Event with id {} could not be found", eventId);
+            log.error("Event with id {} could not be found", eventId);
             return new ObjectNotFoundException("The required object was not found.", String.format("Event with id=%d was not found", eventId));
         });
         if (event.getState() != EventState.PUBLISHED) {
-            log.info("Only published events can be requested, event state = {}", event.getState().name());
+            log.error("Only published events can be requested, event state = {}", event.getState().name());
             throw new IncorrectEventStateException("Incorrect event State",
                     String.format("Only published events can be requested, event state = %s", event.getState().name()));
         }
