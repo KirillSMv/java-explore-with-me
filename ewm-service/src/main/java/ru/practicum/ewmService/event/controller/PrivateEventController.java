@@ -14,7 +14,7 @@ import ru.practicum.ewmService.event.dto.EventFullDto;
 import ru.practicum.ewmService.event.dto.EventShortDto;
 import ru.practicum.ewmService.event.dto.NewEventDto;
 import ru.practicum.ewmService.event.dto.UpdateEventUserRequest;
-import ru.practicum.ewmService.event.service.interfaces.PrivateEventService;
+import ru.practicum.ewmService.event.service.interfaces.EventService;
 import ru.practicum.ewmService.exceptions.CustomValidationException;
 import ru.practicum.ewmService.request.dto.EventRequestStatusUpdateRequest;
 import ru.practicum.ewmService.request.dto.EventRequestStatusUpdateResult;
@@ -30,7 +30,7 @@ import java.util.List;
 @RequestMapping("/users/{userId}/events")
 public class PrivateEventController {
 
-    private final PrivateEventService privateEventService;
+    private final EventService eventService;
 
     @PostMapping
     public ResponseEntity<EventFullDto> addEvent(@PathVariable("userId") Long userId,
@@ -38,7 +38,7 @@ public class PrivateEventController {
                                                  BindingResult errors) {
         checkErrors(errors);
         log.info("addEvent method, pathVar = {}, newEventDto = {}", userId, newEventDto);
-        return new ResponseEntity<>(privateEventService.addEventByUser(userId, newEventDto), HttpStatus.CREATED);
+        return new ResponseEntity<>(eventService.addEventByUser(userId, newEventDto), HttpStatus.CREATED);
     }
 
     @GetMapping
@@ -47,14 +47,14 @@ public class PrivateEventController {
                                                                     @RequestParam(value = "size", defaultValue = "10") @Min(value = 1) Integer size) {
         log.info("getEventsAddedByUser method, parameters: userId = {}, from = {}, size = {}", userId, from, size);
 
-        return new ResponseEntity<>(privateEventService.getEventsAddedByUser(userId, PageRequest.of(from / size, size)), HttpStatus.OK);
+        return new ResponseEntity<>(eventService.getEventsAddedByUser(userId, PageRequest.of(from / size, size)), HttpStatus.OK);
     }
 
     @GetMapping("/{eventId}")
     public ResponseEntity<EventFullDto> getDetailedEventAddedByUser(@PathVariable("userId") Long userId,
                                                                     @PathVariable("eventId") Long eventId) {
         log.info("getDetailedEventAddedByUser method, parameters userId = {}, eventId = {}", userId, eventId);
-        return new ResponseEntity<>(privateEventService.getDetailedEventAddedByUser((userId), eventId), HttpStatus.OK);
+        return new ResponseEntity<>(eventService.getDetailedEventAddedByUser((userId), eventId), HttpStatus.OK);
     }
 
     @PatchMapping("/{eventId}")
@@ -64,7 +64,7 @@ public class PrivateEventController {
                                                                BindingResult errors) {
         checkErrors(errors);
         log.info("updateEvent method, parameters userId = {}, eventId = {}, updateEventUserRequest = {}", userId, eventId, updateEventUserRequest);
-        return new ResponseEntity<>(privateEventService.updateEvent((userId), eventId, updateEventUserRequest), HttpStatus.OK);
+        return new ResponseEntity<>(eventService.updateEvent((userId), eventId, updateEventUserRequest), HttpStatus.OK);
     }
 
     @GetMapping("/{eventId}/requests")
@@ -72,7 +72,7 @@ public class PrivateEventController {
             @PathVariable("userId") Long userId,
             @PathVariable("eventId") Long eventId) {
         log.info("getParticipationRequestsFromUser method, parameters userId = {}, eventId = {}", userId, eventId);
-        return new ResponseEntity<>(privateEventService.getParticipationRequestsFromUser(userId, eventId), HttpStatus.OK);
+        return new ResponseEntity<>(eventService.getParticipationRequestsFromUser(userId, eventId), HttpStatus.OK);
     }
 
     @PatchMapping("/{eventId}/requests")
@@ -84,7 +84,7 @@ public class PrivateEventController {
         checkErrors(errors);
         log.info("processParticipationRequestsByEventInitiator method, parameters userId = {}, eventId = {}, " +
                 "eventRequestStatusUpdateRequest = {}", userId, eventId, eventRequestStatusUpdateRequest);
-        return new ResponseEntity<>(privateEventService.processParticipationRequestsByEventInitiator(userId, eventId,
+        return new ResponseEntity<>(eventService.processParticipationRequestsByEventInitiator(userId, eventId,
                 eventRequestStatusUpdateRequest), HttpStatus.OK);
     }
 

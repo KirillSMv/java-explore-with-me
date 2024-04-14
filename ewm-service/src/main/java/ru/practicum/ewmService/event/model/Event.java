@@ -1,9 +1,6 @@
 package ru.practicum.ewmService.event.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import org.springframework.lang.Nullable;
 import ru.practicum.ewmService.category.model.Category;
 import ru.practicum.ewmService.event.enums.EventState;
@@ -12,7 +9,9 @@ import ru.practicum.ewmService.user.model.User;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
-@Data
+
+@Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
@@ -68,6 +67,39 @@ public class Event {
 
     @Embedded
     Location location;
+
+    @Override
+    public String toString() {
+        return "Event{" +
+                "id=" + id +
+                ", annotation='" + annotation + '\'' +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", category=" + category +
+                ", confirmedRequests=" + confirmedRequests +
+                ", eventDate=" + eventDate +
+                ", createdOn=" + createdOn +
+                ", publishedOn=" + publishedOn +
+                ", initiator=" + initiator +
+                ", paid=" + paid +
+                ", requestModeration=" + requestModeration +
+                ", state=" + state +
+                ", participantLimit=" + participantLimit +
+                ", location=" + location +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (this.getClass() != obj.getClass())
+            return false;
+        Event other = (Event) obj;
+        return this.id != null && id.equals(other.getId());
+    }
 }
 
 

@@ -4,7 +4,7 @@ import ru.practicum.ewmService.request.dto.ParticipationRequestDto;
 
 import java.util.List;
 
-public interface PrivateParticipationRequestService {
+public interface ParticipationRequestService {
 
     ParticipationRequestDto addParticipationRequest(Long userId, Long eventId);
 

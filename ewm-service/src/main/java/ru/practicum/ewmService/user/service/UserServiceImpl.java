@@ -10,7 +10,7 @@ import ru.practicum.ewmService.user.dto.NewUserRequest;
 import ru.practicum.ewmService.user.dto.UserDto;
 import ru.practicum.ewmService.user.dto.mapper.UserDtoMapper;
 import ru.practicum.ewmService.user.model.User;
-import ru.practicum.ewmService.user.service.interfaces.AdminUserService;
+import ru.practicum.ewmService.user.service.interfaces.UserService;
 import ru.practicum.ewmService.user.storage.UserRepository;
 
 import java.util.List;
@@ -19,7 +19,7 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class AdminUserServiceImpl implements AdminUserService {
+public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final UserDtoMapper userDtoMapper;

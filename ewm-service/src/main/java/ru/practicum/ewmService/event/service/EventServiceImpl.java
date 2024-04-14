@@ -1,5 +1,6 @@
 package ru.practicum.ewmService.event.service;
 
+import com.querydsl.core.BooleanBuilder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -7,21 +8,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewmService.category.model.Category;
 import ru.practicum.ewmService.category.storage.CategoryRepository;
-import ru.practicum.ewmService.event.dto.EventFullDto;
-import ru.practicum.ewmService.event.dto.EventShortDto;
-import ru.practicum.ewmService.event.dto.NewEventDto;
-import ru.practicum.ewmService.event.dto.UpdateEventUserRequest;
+import ru.practicum.ewmService.event.dto.*;
 import ru.practicum.ewmService.event.dto.mapper.EventDtoMapper;
 import ru.practicum.ewmService.event.enums.EventState;
 import ru.practicum.ewmService.event.enums.EventStateAction;
+import ru.practicum.ewmService.event.enums.SortOption;
 import ru.practicum.ewmService.event.model.Event;
-import ru.practicum.ewmService.event.service.interfaces.PrivateEventService;
+import ru.practicum.ewmService.event.model.QEvent;
+import ru.practicum.ewmService.event.service.interfaces.EventService;
 import ru.practicum.ewmService.event.service.interfaces.StatsRecordingService;
 import ru.practicum.ewmService.event.storage.EventRepository;
-import ru.practicum.ewmService.exceptions.CustomValidationException;
-import ru.practicum.ewmService.exceptions.EventUpdatingException;
-import ru.practicum.ewmService.exceptions.ObjectNotFoundException;
-import ru.practicum.ewmService.exceptions.ParticipationRequestProcessingException;
+import ru.practicum.ewmService.exceptions.*;
 import ru.practicum.ewmService.request.dto.EventRequestStatusUpdateRequest;
 import ru.practicum.ewmService.request.dto.EventRequestStatusUpdateResult;
 import ru.practicum.ewmService.request.dto.ParticipationRequestDto;
@@ -42,7 +39,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
-public class PrivateEventServiceImpl implements PrivateEventService {
+public class EventServiceImpl implements EventService {
 
     private final UserRepository userRepository;
     private final EventDtoMapper eventDtoMapper;
@@ -228,13 +225,13 @@ public class PrivateEventServiceImpl implements PrivateEventService {
     public Map<Long, Long> getEventIdViewsMap(List<Event> events) {
         List<Event> notPublishedEvents = new ArrayList<>();
         List<Event> publishedEvents = new ArrayList<>();
-        LocalDateTime earliestPublicationDate = LocalDateTime.MIN;
+        LocalDateTime startDateForStats = LocalDateTime.now();
 
         for (Event event : events) {
             if (event.getState() == EventState.PUBLISHED) {
                 publishedEvents.add(event);
-                if (event.getPublishedOn() != null && event.getPublishedOn().isAfter(earliestPublicationDate)) {
-                    earliestPublicationDate = event.getPublishedOn();
+                if (event.getPublishedOn() != null && event.getPublishedOn().isBefore(startDateForStats)) {
+                    startDateForStats = event.getPublishedOn();
                 }
             } else {
                 notPublishedEvents.add(event);
@@ -252,7 +249,156 @@ public class PrivateEventServiceImpl implements PrivateEventService {
         if (publishedEvents.isEmpty()) {
             return eventIdViewsMap;
         }
-        return processPublishedEvents(earliestPublicationDate, eventIdViewsMap, publishedEvents);
+        return processPublishedEvents(startDateForStats, eventIdViewsMap, publishedEvents);
+    }
+
+    @Override
+    public List<EventShortDto> getEventsByParameters(SearchParametersPublicRequest searchParametersPublicRequest) {
+        List<Event> eventsList = eventRepository.findAll(getPredicate(searchParametersPublicRequest),
+                searchParametersPublicRequest.getPageable()).getContent();
+
+
+        if (searchParametersPublicRequest.getSortOption() == SortOption.EVENT_DATE) {
+            return getEventShortDtoListWithStatistic(eventsList).stream()
+                    .sorted(Comparator.comparing(EventShortDto::getEventDate)).collect(Collectors.toList());
+        }
+        return getEventShortDtoListWithStatistic(eventsList).stream()
+                .sorted(Comparator.comparingLong(EventShortDto::getViews)).collect(Collectors.toList());
+    }
+
+    @Override
+    public EventFullDto getEventById(Long eventId) {
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> {
+            log.error("Event with id {} could not be found", eventId);
+            return new ObjectNotFoundException("The required object was not found.", String.format("Event with id=%d was not found", eventId));
+        });
+        if (event.getState() != EventState.PUBLISHED) {
+            log.error("Only published events can be requested, event state = {}", event.getState().name());
+            throw new IncorrectEventStateException("Incorrect event State",
+                    String.format("Only published events can be requested, event state = %s", event.getState().name()));
+        }
+        return getEventFullDtoWithStatistic(event);
+
+    }
+
+    @Transactional
+    @Override
+    public EventFullDto updateEventByAdmin(UpdateEventAdminRequest updateEventAdminRequest, Long eventId) {
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> {
+            log.error("Event with id {} could not be found", eventId);
+            return new ObjectNotFoundException("The required object was not found.", String.format("Event with id=%d was not found", eventId));
+        });
+        checkUpdateRequirements(event, updateEventAdminRequest);
+        Event updatedEvent = eventRepository.save(updateEventFields(event, updateEventAdminRequest));
+        return getEventFullDtoWithStatistic(updatedEvent);
+    }
+
+    @Override
+    public List<EventFullDto> getEventsBySearch(SearchParametersAdminRequest searchParametersAdminRequest) {
+        List<Event> eventsList = eventRepository.findAll(getPredicate(searchParametersAdminRequest), searchParametersAdminRequest.getPageable()).getContent();
+        return getEventFullDtoList(eventsList);
+    }
+
+    private BooleanBuilder getPredicate(SearchParametersAdminRequest searchParametersAdminRequest) {
+        QEvent qEvent = QEvent.event;
+        BooleanBuilder booleanBuilder = new BooleanBuilder();
+        if (searchParametersAdminRequest.getUsers() != null) {
+            booleanBuilder.and(qEvent.initiator.id.in(searchParametersAdminRequest.getUsers()));
+        }
+        if (searchParametersAdminRequest.getStates() != null) {
+            booleanBuilder.and(qEvent.state.in(searchParametersAdminRequest.getStates()));
+        }
+        if (searchParametersAdminRequest.getCategories() != null) {
+            booleanBuilder.and(qEvent.category.id.in(searchParametersAdminRequest.getCategories()));
+        }
+        if (searchParametersAdminRequest.getRangeStart() != null) {
+            booleanBuilder.and(qEvent.eventDate.goe(searchParametersAdminRequest.getRangeStart()));
+        }
+        if (searchParametersAdminRequest.getRangeEnd() != null) {
+            booleanBuilder.and(qEvent.eventDate.loe(searchParametersAdminRequest.getRangeEnd()));
+        }
+        return booleanBuilder;
+    }
+
+    private void checkUpdateRequirements(Event event, UpdateEventAdminRequest updateEventAdminRequest) {
+        if (updateEventAdminRequest.getStateAction() == EventStateAction.PUBLISH_EVENT) {
+            if (event.getState() != EventState.PENDING) {
+                log.error("Cannot publish the event because it's not in the right state: {}", event.getState().toString());
+                throw new EventAdminUpdateException("For the requested operation the conditions are not met.",
+                        String.format("Cannot publish the event because it's not in the right state: %s", event.getState().toString()));
+            }
+            if (LocalDateTime.now().plusHours(1).isAfter(event.getEventDate())) {
+                log.error("Event cannot be published due to its start in less than 1 hour, event.getEventDate() = {}," +
+                        " LocalDateTime.now().plusHours(1) {}", event.getEventDate(), LocalDateTime.now().plusHours(1));
+                throw new EventAdminUpdateException("For the requested operation the conditions are not met.",
+                        ("Event cannot be published due to its start in less than 1 hour"));
+            }
+        } else if (updateEventAdminRequest.getStateAction() == EventStateAction.REJECT_EVENT) {
+            if (event.getState() != EventState.PENDING) {
+                log.error("Cannot reject the event because it's not in the right state: {}", event.getState().toString());
+                throw new EventAdminUpdateException("For the requested operation the conditions are not met.",
+                        String.format("Cannot reject the event because it's not in the right state: %s", event.getState().toString()));
+            }
+        }
+    }
+
+    private Event updateEventFields(Event event, UpdateEventAdminRequest updateEventAdminRequest) {
+        event.setAnnotation(Objects.requireNonNullElse(updateEventAdminRequest.getAnnotation(), event.getAnnotation()));
+        event.setDescription(Objects.requireNonNullElse(updateEventAdminRequest.getDescription(), event.getDescription()));
+        event.setEventDate(Objects.requireNonNullElse(updateEventAdminRequest.getEventDate(), event.getEventDate()));
+        event.setLocation(Objects.requireNonNullElse(updateEventAdminRequest.getLocation(), event.getLocation()));
+        event.setPaid(Objects.requireNonNullElse(updateEventAdminRequest.getPaid(), event.isPaid()));
+        event.setParticipantLimit(Objects.requireNonNullElse(updateEventAdminRequest.getParticipantLimit(), event.getParticipantLimit()));
+        event.setRequestModeration(Objects.requireNonNullElse(updateEventAdminRequest.getRequestModeration(), event.isRequestModeration()));
+        event.setTitle(Objects.requireNonNullElse(updateEventAdminRequest.getTitle(), event.getTitle()));
+        if (updateEventAdminRequest.getStateAction() == EventStateAction.PUBLISH_EVENT) {
+            event.setState(EventState.PUBLISHED);
+            event.setPublishedOn(LocalDateTime.now());
+        } else if (updateEventAdminRequest.getStateAction() == EventStateAction.REJECT_EVENT) {
+            event.setState(EventState.CANCELED);
+        }
+
+        Long newCategoryId = updateEventAdminRequest.getCategory();
+        if (newCategoryId != null) {
+            if (!event.getCategory().getId().equals(newCategoryId)) {
+                Category newCategory = categoryRepository.findById(newCategoryId).orElseThrow(() -> {
+                    log.error("Category with id {} could not be found", newCategoryId);
+                    return new ObjectNotFoundException("The required object was not found.", String.format("Category with id=%d was not found", newCategoryId));
+                });
+                event.setCategory(newCategory);
+            }
+        }
+        return event;
+    }
+
+    private BooleanBuilder getPredicate(SearchParametersPublicRequest searchParametersPublicRequest) {
+        QEvent qEvent = QEvent.event;
+        BooleanBuilder booleanBuilder = new BooleanBuilder();
+
+        if (searchParametersPublicRequest.getText() != null) {
+            booleanBuilder.and(qEvent.description.containsIgnoreCase(searchParametersPublicRequest.getText())
+                    .or(qEvent.annotation.containsIgnoreCase(searchParametersPublicRequest.getText())));
+        }
+        if (searchParametersPublicRequest.getCategories() != null) {
+            booleanBuilder.and(qEvent.category.id.in(searchParametersPublicRequest.getCategories()));
+        }
+        if (searchParametersPublicRequest.getRangeStart() != null) {
+            booleanBuilder.and(qEvent.eventDate.goe(searchParametersPublicRequest.getRangeStart()));
+        }
+        if (searchParametersPublicRequest.getRangeEnd() != null) {
+            booleanBuilder.and(qEvent.eventDate.loe(searchParametersPublicRequest.getRangeEnd()));
+        }
+        if (searchParametersPublicRequest.getRangeStart() == null && searchParametersPublicRequest.getRangeEnd() == null) {
+            booleanBuilder.and(qEvent.eventDate.goe(LocalDateTime.now()));
+        }
+        if (searchParametersPublicRequest.isPaid()) {
+            booleanBuilder.and(qEvent.paid.eq(true));
+        }
+        if (searchParametersPublicRequest.isOnlyAvailable()) {
+            booleanBuilder.and(qEvent.paid.eq(true));
+        }
+        booleanBuilder.and(qEvent.state.eq(EventState.PUBLISHED));
+        return booleanBuilder;
     }
 
     private void checkExceptionalCasesWhenProcessRequests(Event event) {
@@ -271,14 +417,14 @@ public class PrivateEventServiceImpl implements PrivateEventService {
         }
     }
 
-    private Map<Long, Long> processPublishedEvents(LocalDateTime earliestPublicationDate,
+    private Map<Long, Long> processPublishedEvents(LocalDateTime startDateForStats,
                                                    Map<Long, Long> eventIdViewsMap, List<Event> publishedEvents) {
         Map<String, Long> eventIdUriMap = new HashMap<>();
         for (Event publishedEvent : publishedEvents) {
             eventIdUriMap.put("/events/" + publishedEvent.getId(), publishedEvent.getId());
         }
 
-        StatsParamsDto statsParamsDto = new StatsParamsDto(earliestPublicationDate, LocalDateTime.now(),
+        StatsParamsDto statsParamsDto = new StatsParamsDto(startDateForStats, LocalDateTime.now(),
                 new ArrayList<>(eventIdUriMap.keySet()), false);
         List<StatsToUserDto> statsList = statsRecordingService.getStats(statsParamsDto);
         log.debug("statsList size = {}", statsList.size());

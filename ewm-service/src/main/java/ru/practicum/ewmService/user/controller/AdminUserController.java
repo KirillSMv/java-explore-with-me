@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewmService.exceptions.CustomValidationException;
 import ru.practicum.ewmService.user.dto.NewUserRequest;
 import ru.practicum.ewmService.user.dto.UserDto;
-import ru.practicum.ewmService.user.service.interfaces.AdminUserService;
+import ru.practicum.ewmService.user.service.interfaces.UserService;
 
 import javax.validation.constraints.Min;
 import java.util.List;
@@ -25,13 +25,13 @@ import java.util.List;
 @Validated
 public class AdminUserController {
 
-    private final AdminUserService adminUserService;
+    private final UserService userService;
 
     @PostMapping
     public ResponseEntity<UserDto> addUser(@RequestBody @Validated NewUserRequest newUser, BindingResult errors) {
         checkErrors(errors);
         log.info("addUser method, newUser: {}", newUser);
-        return new ResponseEntity<>(adminUserService.addUser(newUser), HttpStatus.CREATED);
+        return new ResponseEntity<>(userService.addUser(newUser), HttpStatus.CREATED);
     }
 
     @GetMapping
@@ -39,19 +39,19 @@ public class AdminUserController {
                                                   @RequestParam(value = "from", defaultValue = "0") @Min(value = 0) Integer from,
                                                   @RequestParam(value = "size", defaultValue = "10") @Min(value = 1) Integer size) {
         log.info("getUsers method, parameters: ids = {}, from = {}, size = {}", ids, from, size);
-        return new ResponseEntity<>(adminUserService.getUsers(ids, PageRequest.of(from / size, size)), HttpStatus.OK);
+        return new ResponseEntity<>(userService.getUsers(ids, PageRequest.of(from / size, size)), HttpStatus.OK);
     }
 
     @GetMapping("/{userId}")
     public ResponseEntity<UserDto> getUser(@PathVariable("userId") @Min(value = 1) Long userId) {
         log.info("getUser method, parameters userId = {}", userId);
-        return new ResponseEntity<>(adminUserService.getUserById(userId), HttpStatus.OK);
+        return new ResponseEntity<>(userService.getUserById(userId), HttpStatus.OK);
     }
 
     @DeleteMapping("/{userId}")
     public ResponseEntity<String> deleteUser(@PathVariable("userId") @Min(value = 1) Long userId) {
         log.info("deleteUser method, userId = {}", userId);
-        adminUserService.deleteUser(userId);
+        userService.deleteUser(userId);
         return new ResponseEntity<>("Пользователь удален", HttpStatus.NO_CONTENT);
 
     }

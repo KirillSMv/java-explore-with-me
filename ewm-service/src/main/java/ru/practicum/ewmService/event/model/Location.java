@@ -1,14 +1,16 @@
 package ru.practicum.ewmService.event.model;
 
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.validation.constraints.Size;
 
 @Embeddable
-@Data
+@Setter
+@Getter
 @NoArgsConstructor
 public class Location {
     @Column(name = "lat")
@@ -18,4 +20,12 @@ public class Location {
     @Column(name = "lon")
     @Size(min = -180, max = 180)
     private Float lon;
+
+    @Override
+    public String toString() {
+        return "Location{" +
+                "lat=" + lat +
+                ", lon=" + lon +
+                '}';
+    }
 }

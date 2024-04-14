@@ -9,8 +9,8 @@ import ru.practicum.statsDto.StatsParamsDto;
 import ru.practicum.statsDto.StatsToUserDto;
 import ru.practicum.statsServer.mapper.StatsDtoMapper;
 import ru.practicum.statsServer.model.Statistic;
-import ru.practicum.statsServer.storage.StatsDtoToUser;
 import ru.practicum.statsServer.storage.StatsRepository;
+import ru.practicum.statsServer.storage.StatsViewDto;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,7 +27,7 @@ public class StatsServiceImpl implements StatsService {
     @Transactional
     public StatsToUserDto saveStats(NewStatsDto newStatsDto) {
         Statistic savedStatistic = statsRepository.save(statsDtoMapper.toStatistic(newStatsDto));
-        log.info("savedStatistic = {}", savedStatistic);
+        log.debug("savedStatistic = {}", savedStatistic);
         return statsDtoMapper.toStatsToUserDto(savedStatistic);
     }
 
@@ -36,19 +36,14 @@ public class StatsServiceImpl implements StatsService {
         LocalDateTime start = statsParamsDto.getStart();
         LocalDateTime end = statsParamsDto.getEnd();
         List<String> uris = statsParamsDto.getUris();
-        boolean unique = statsParamsDto.isUnique();
-        List<StatsDtoToUser> stats;
+        List<StatsViewDto> stats;
 
-        if (uris == null && !unique) {
-            stats = statsRepository.findAllByTimestampBetweenOrderByHitsDesc(start, end);
-        } else if (uris != null && unique) {
+        if (statsParamsDto.isUnique()) {
             stats = statsRepository.findAllDistinctByIpAndUriInAndTimestampBetween(uris, start, end);
-        } else if (uris == null) {
-            stats = statsRepository.findAllDistinctByIpAndTimestampBetween(start, end);
         } else {
             stats = statsRepository.findAllByUriInAndTimestampBetweenOrderByHitsDesc(uris, start, end);
         }
-        log.info("List<StatsDtoToUser> stats = {}", stats);
+        log.debug("List<StatsDtoToUser> stats size = {}", stats.size());
         return statsDtoMapper.toStatsToUserDtoList(stats);
     }
 }

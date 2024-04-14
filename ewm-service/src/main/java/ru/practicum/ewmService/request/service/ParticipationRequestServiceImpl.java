@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewmService.event.enums.EventState;
 import ru.practicum.ewmService.event.model.Event;
-import ru.practicum.ewmService.event.service.interfaces.PrivateEventService;
+import ru.practicum.ewmService.event.service.interfaces.EventService;
 import ru.practicum.ewmService.event.storage.EventRepository;
 import ru.practicum.ewmService.exceptions.ObjectNotFoundException;
 import ru.practicum.ewmService.exceptions.ParticipationRequestProcessingException;
@@ -14,7 +14,7 @@ import ru.practicum.ewmService.request.dto.ParticipationRequestDto;
 import ru.practicum.ewmService.request.dto.mapper.ParticipationRequestMapper;
 import ru.practicum.ewmService.request.enums.RequestState;
 import ru.practicum.ewmService.request.model.ParticipationRequest;
-import ru.practicum.ewmService.request.service.interfaces.PrivateParticipationRequestService;
+import ru.practicum.ewmService.request.service.interfaces.ParticipationRequestService;
 import ru.practicum.ewmService.request.storage.ParticipationRequestRepository;
 import ru.practicum.ewmService.user.model.User;
 import ru.practicum.ewmService.user.storage.UserRepository;
@@ -25,12 +25,12 @@ import java.util.List;
 @Slf4j
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
-public class PrivateParticipationRequestServiceImpl implements PrivateParticipationRequestService {
+public class ParticipationRequestServiceImpl implements ParticipationRequestService {
 
     private final ParticipationRequestRepository participationRequestRepository;
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
-    private final PrivateEventService privateEventService;
+    private final EventService eventService;
     private final ParticipationRequestMapper participationRequestMapper;
 
     @Override
@@ -60,7 +60,7 @@ public class PrivateParticipationRequestServiceImpl implements PrivateParticipat
         log.debug("privateParticipationRequestRepository = {}", participationRequestRepository);
 
         if (savedParticipationRequest.getStatus() == RequestState.CONFIRMED) {
-            privateEventService.updateEventConfirmedRequests(event, 1L);
+            eventService.updateEventConfirmedRequests(event, 1L);
         }
         return participationRequestMapper.toParticipationRequestDto(savedParticipationRequest);
     }
@@ -98,7 +98,7 @@ public class PrivateParticipationRequestServiceImpl implements PrivateParticipat
                     "Participation request cannot be cancelled by another user");
         }
         if (participationRequest.getStatus() == RequestState.CONFIRMED) {
-            privateEventService.updateEventConfirmedRequests(participationRequest.getEvent(), -1L);
+            eventService.updateEventConfirmedRequests(participationRequest.getEvent(), -1L);
         }
         participationRequest.setStatus(RequestState.CANCELED);
         return participationRequestMapper.toParticipationRequestDto(participationRequestRepository.save(participationRequest));

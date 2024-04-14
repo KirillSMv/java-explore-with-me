@@ -14,7 +14,7 @@ import ru.practicum.ewmService.event.dto.EventFullDto;
 import ru.practicum.ewmService.event.dto.SearchParametersAdminRequest;
 import ru.practicum.ewmService.event.dto.UpdateEventAdminRequest;
 import ru.practicum.ewmService.event.enums.EventState;
-import ru.practicum.ewmService.event.service.interfaces.AdminEventService;
+import ru.practicum.ewmService.event.service.interfaces.EventService;
 import ru.practicum.ewmService.exceptions.CustomValidationException;
 
 import javax.validation.constraints.Min;
@@ -28,7 +28,7 @@ import static ru.practicum.ewmService.constans.Constants.TIME_PATTERN;
 @RequiredArgsConstructor
 @RequestMapping("/admin/events")
 public class AdminEventController {
-    private final AdminEventService adminEventService;
+    private final EventService eventService;
 
     @PatchMapping("/{eventId}")
     public ResponseEntity<EventFullDto> updateEventByAdmin(@PathVariable("eventId") Long eventId,
@@ -36,7 +36,7 @@ public class AdminEventController {
                                                            BindingResult errors) {
         log.info("updateEventByAdmin method, parameters: updateEventAdminRequest = {}, eventId = {}", updateEventAdminRequest, eventId);
         checkErrors(errors);
-        return new ResponseEntity<>(adminEventService.updateEventByAdmin(updateEventAdminRequest, eventId), HttpStatus.OK);
+        return new ResponseEntity<>(eventService.updateEventByAdmin(updateEventAdminRequest, eventId), HttpStatus.OK);
     }
 
     @GetMapping
@@ -52,7 +52,7 @@ public class AdminEventController {
                         "rangeEnd = {}, from = {}, size = {}", users, states,
                 categories, rangeStart, rangeEnd, from, size);
         SearchParametersAdminRequest searchParametersAdminRequest = checkParameters(users, states, categories, rangeStart, rangeEnd, from, size);
-        List<EventFullDto> eventFullDtoList = adminEventService.getEventsBySearch(searchParametersAdminRequest);
+        List<EventFullDto> eventFullDtoList = eventService.getEventsBySearch(searchParametersAdminRequest);
         return new ResponseEntity<>(eventFullDtoList, HttpStatus.OK);
     }
 

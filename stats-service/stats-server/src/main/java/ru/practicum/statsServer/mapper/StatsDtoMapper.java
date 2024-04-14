@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 import ru.practicum.statsDto.NewStatsDto;
 import ru.practicum.statsDto.StatsToUserDto;
 import ru.practicum.statsServer.model.Statistic;
-import ru.practicum.statsServer.storage.StatsDtoToUser;
+import ru.practicum.statsServer.storage.StatsViewDto;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,9 +30,7 @@ public class StatsDtoMapper {
     }
 
 
-    public List<StatsToUserDto> toStatsToUserDtoList(List<StatsDtoToUser> stats) {
+    public List<StatsToUserDto> toStatsToUserDtoList(List<StatsViewDto> stats) {
         return stats.stream().map(stat -> new StatsToUserDto(stat.getApp(), stat.getUri(), stat.getHits())).collect(Collectors.toList());
     }
-
-
 }

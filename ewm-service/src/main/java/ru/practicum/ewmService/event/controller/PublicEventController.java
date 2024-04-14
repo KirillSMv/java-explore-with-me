@@ -11,7 +11,7 @@ import ru.practicum.ewmService.event.dto.EventFullDto;
 import ru.practicum.ewmService.event.dto.EventShortDto;
 import ru.practicum.ewmService.event.dto.SearchParametersPublicRequest;
 import ru.practicum.ewmService.event.enums.SortOption;
-import ru.practicum.ewmService.event.service.interfaces.PublicEventService;
+import ru.practicum.ewmService.event.service.interfaces.EventService;
 import ru.practicum.ewmService.event.service.interfaces.StatsRecordingService;
 import ru.practicum.ewmService.exceptions.CustomValidationException;
 import ru.practicum.statsDto.NewStatsDto;
@@ -31,7 +31,7 @@ import static ru.practicum.ewmService.constans.Constants.TIME_PATTERN;
 @Validated
 public class PublicEventController {
 
-    private final PublicEventService publicEventService;
+    private final EventService eventService;
     private final StatsRecordingService statsRecordingService;
 
     @GetMapping
@@ -49,7 +49,7 @@ public class PublicEventController {
                         "rangeEnd = {}, onlyAvailable = {}, sort = {}, from = {}, size = {} ", text, categories,
                 paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
         SearchParametersPublicRequest searchParametersPublicRequest = checkParameters(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
-        List<EventShortDto> eventShortDtoList = publicEventService.getEventsByParameters(searchParametersPublicRequest);
+        List<EventShortDto> eventShortDtoList = eventService.getEventsByParameters(searchParametersPublicRequest);
         statsRecordingService.postStats(new NewStatsDto(APP, request.getRequestURI(), request.getRemoteAddr(), LocalDateTime.now()));
         return new ResponseEntity<>(eventShortDtoList, HttpStatus.OK);
     }
@@ -57,7 +57,7 @@ public class PublicEventController {
     @GetMapping("/{id}")
     public ResponseEntity<EventFullDto> getEventById(@PathVariable("id") Long id, HttpServletRequest request) {
         log.info("getEventById method, id = {}", id);
-        EventFullDto eventFullDto = publicEventService.getEventById(id);
+        EventFullDto eventFullDto = eventService.getEventById(id);
         statsRecordingService.postStats(new NewStatsDto(APP, request.getRequestURI(), request.getRemoteAddr(), LocalDateTime.now()));
         return new ResponseEntity<>(eventFullDto, HttpStatus.OK);
     }

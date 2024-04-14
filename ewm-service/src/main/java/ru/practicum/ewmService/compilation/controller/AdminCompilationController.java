@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewmService.compilation.dto.CompilationDto;
 import ru.practicum.ewmService.compilation.dto.NewCompilationDto;
 import ru.practicum.ewmService.compilation.dto.UpdateCompilationRequest;
-import ru.practicum.ewmService.compilation.service.interfaces.AdminCompilationsService;
+import ru.practicum.ewmService.compilation.service.interfaces.CompilationService;
 import ru.practicum.ewmService.exceptions.CustomValidationException;
 
 @RestController
@@ -21,14 +21,14 @@ import ru.practicum.ewmService.exceptions.CustomValidationException;
 @RequestMapping("/admin/compilations")
 public class AdminCompilationController {
 
-    private final AdminCompilationsService adminCompilationsService;
+    private final CompilationService compilationService;
 
     @PostMapping
     public ResponseEntity<CompilationDto> addCompilation(@RequestBody @Validated NewCompilationDto newCompilationDto,
                                                          BindingResult errors) {
         checkErrors(errors);
         log.info("addCompilation method, newCompilationDto = {}", newCompilationDto);
-        return new ResponseEntity<>(adminCompilationsService.addCompilation(newCompilationDto), HttpStatus.CREATED);
+        return new ResponseEntity<>(compilationService.addCompilation(newCompilationDto), HttpStatus.CREATED);
     }
 
 
@@ -36,7 +36,7 @@ public class AdminCompilationController {
     public ResponseEntity<String> deleteCompilation(@PathVariable("compId") Long compId) {
         log.info("deleteCompilation method, parameters: compId = {}", compId);
 
-        adminCompilationsService.deleteCompilation(compId);
+        compilationService.deleteCompilation(compId);
         return new ResponseEntity<>("Compilation deleted", HttpStatus.NO_CONTENT);
     }
 
@@ -46,7 +46,7 @@ public class AdminCompilationController {
                                                             BindingResult errors) {
         log.info("updateCompilation method, parameters: compId = {}, updateCompilationRequest = {}", compId, updateCompilationRequest);
         checkErrors(errors);
-        return new ResponseEntity<>(adminCompilationsService.updateCompilation(compId, updateCompilationRequest), HttpStatus.OK);
+        return new ResponseEntity<>(compilationService.updateCompilation(compId, updateCompilationRequest), HttpStatus.OK);
 
 
     }

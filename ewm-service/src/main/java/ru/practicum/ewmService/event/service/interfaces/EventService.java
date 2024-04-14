@@ -1,10 +1,7 @@
 package ru.practicum.ewmService.event.service.interfaces;
 
 import org.springframework.data.domain.Pageable;
-import ru.practicum.ewmService.event.dto.EventFullDto;
-import ru.practicum.ewmService.event.dto.EventShortDto;
-import ru.practicum.ewmService.event.dto.NewEventDto;
-import ru.practicum.ewmService.event.dto.UpdateEventUserRequest;
+import ru.practicum.ewmService.event.dto.*;
 import ru.practicum.ewmService.event.model.Event;
 import ru.practicum.ewmService.request.dto.EventRequestStatusUpdateRequest;
 import ru.practicum.ewmService.request.dto.EventRequestStatusUpdateResult;
@@ -13,7 +10,7 @@ import ru.practicum.ewmService.request.dto.ParticipationRequestDto;
 import java.util.List;
 import java.util.Map;
 
-public interface PrivateEventService {
+public interface EventService {
     EventFullDto addEventByUser(Long userId, NewEventDto newEventDto);
 
     List<EventShortDto> getEventsAddedByUser(Long userId, Pageable pageable);
@@ -40,4 +37,14 @@ public interface PrivateEventService {
     List<EventFullDto> getEventFullDtoList(List<Event> events);
 
     Map<Long, Long> getEventIdViewsMap(List<Event> events);
+
+    EventFullDto updateEventByAdmin(UpdateEventAdminRequest updateEventAdminRequest, Long eventId);
+
+    List<EventFullDto> getEventsBySearch(SearchParametersAdminRequest searchParametersAdminRequest);
+
+    List<EventShortDto> getEventsByParameters(SearchParametersPublicRequest searchParametersPublicRequest);
+
+    EventFullDto getEventById(Long eventId);
+
+
 }
