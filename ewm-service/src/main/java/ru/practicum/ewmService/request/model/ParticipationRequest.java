@@ -58,4 +58,9 @@ public class ParticipationRequest {
                 ", status=" + status +
                 '}';
     }
+
+    @Override
+    public int hashCode() {
+        return 12;
+    }
 }

@@ -44,4 +44,9 @@ public class User {
         User other = (User) obj;
         return this.id != null && id.equals(other.getId());
     }
+
+    @Override
+    public int hashCode() {
+        return 16;
+    }
 }

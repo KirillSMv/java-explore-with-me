@@ -58,4 +58,9 @@ public class Compilation {
         Compilation other = (Compilation) obj;
         return this.id != null && id.equals(other.getId());
     }
+
+    @Override
+    public int hashCode() {
+        return 14;
+    }
 }

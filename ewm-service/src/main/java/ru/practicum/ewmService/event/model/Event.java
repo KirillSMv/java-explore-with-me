@@ -100,6 +100,11 @@ public class Event {
         Event other = (Event) obj;
         return this.id != null && id.equals(other.getId());
     }
+
+    @Override
+    public int hashCode() {
+        return 15;
+    }
 }
 
 

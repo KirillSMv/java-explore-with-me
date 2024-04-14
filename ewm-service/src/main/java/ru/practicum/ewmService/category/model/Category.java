@@ -40,4 +40,9 @@ public class Category {
         Category other = (Category) obj;
         return this.id != null && id.equals(other.getId());
     }
+
+    @Override
+    public int hashCode() {
+        return 13;
+    }
 }
