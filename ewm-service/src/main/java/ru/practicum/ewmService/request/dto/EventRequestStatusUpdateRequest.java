@@ -5,15 +5,16 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.ewmService.request.enums.RequestState;
 
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class EventRequestStatusUpdateRequest {
-    //Изменение статуса запроса на участие в событии текущего пользователя
+    @NotNull
+    private List<Long> requestIds;
 
-    List<Long> requestIds; //Идентификаторы запросов на участие в событии текущего пользователя
-    RequestState status; //Новый статус запроса на участие в событии текущего пользователя
-
+    @NotNull
+    private RequestState status;
 }

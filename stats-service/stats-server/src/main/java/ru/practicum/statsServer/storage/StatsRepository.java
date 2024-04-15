@@ -11,33 +11,25 @@ import java.util.List;
 @Repository
 public interface StatsRepository extends JpaRepository<Statistic, Long> {
 
-    @Query(value = "SELECT st.app, st.uri, COUNT(st.ip) as hits " +
-            "FROM stats as st " +
-            "WHERE st.timestamp between ?1 and ?2 " +
-            "group by st.app, st.uri " +
-            "ORDER BY COUNT(st.ip) DESC", nativeQuery = true)
-    List<StatsDtoToUser> findAllByTimestampBetweenOrderByHitsDesc(LocalDateTime start, LocalDateTime end);
+    @Query("SELECT new ru.practicum.statsServer.storage.StatsViewDto(st.app, st.uri, COUNT(st.ip)) " + //as hits
+            "FROM Statistic AS st " +
+            "WHERE (COALESCE(:uris) IS NULL OR st.uri IN :uris) " +
+            "AND st.timestamp BETWEEN CAST(:start AS timestamp) AND CAST(:end AS timestamp) " +
+            "GROUP BY st.app, st.uri " +
+            "ORDER BY COUNT(st.ip) DESC")
+    List<StatsViewDto> findAllByUriInAndTimestampBetweenOrderByHitsDesc(List<String> uris,
+                                                                        LocalDateTime start,
+                                                                        LocalDateTime end);
 
-    @Query(value = "SELECT st.app, st.uri, COUNT(DISTINCT st.ip) as hits " +
-            "FROM stats as st " +
-            "WHERE st.uri IN (?1) " +
-            "AND st.timestamp between ?2 and ?3 " +
-            "group by st.app, st.uri " +
-            "ORDER BY COUNT(st.ip) DESC", nativeQuery = true)
-    List<StatsDtoToUser> findAllDistinctByIpAndUriInAndTimestampBetween(List<String> uris, LocalDateTime start, LocalDateTime end);
 
-    @Query(value = "SELECT st.app, st.uri, COUNT(DISTINCT st.ip) as hits " +
-            "FROM stats as st " +
-            "WHERE st.timestamp between ?1 and ?2 " +
-            "group by st.app, st.uri " +
-            "ORDER BY COUNT(st.ip) DESC", nativeQuery = true)
-    List<StatsDtoToUser> findAllDistinctByIpAndTimestampBetween(LocalDateTime start, LocalDateTime end);
-
-    @Query(value = "SELECT st.app, st.uri, COUNT(st.ip) as hits " +
-            "FROM stats as st " +
-            "WHERE st.uri IN (?1) " +
-            "AND st.timestamp between ?2 and ?3 " +
-            "group by st.app, st.uri " +
-            "ORDER BY COUNT(st.ip) DESC", nativeQuery = true)
-    List<StatsDtoToUser> findAllByUriInAndTimestampBetweenOrderByHitsDesc(List<String> uris, LocalDateTime start, LocalDateTime end);
+    @Query("SELECT new ru.practicum.statsServer.storage.StatsViewDto(st.app, st.uri, COUNT(DISTINCT st.ip)) " +
+            "FROM Statistic as st " +
+            "WHERE (COALESCE(:uris) IS NULL OR st.uri IN :uris) " +
+            "AND st.timestamp between CAST(:start AS timestamp) and CAST(:end AS timestamp) " +
+            "GROUP BY st.app, st.uri " +
+            "ORDER BY COUNT(st.ip) DESC")
+    List<StatsViewDto> findAllDistinctByIpAndUriInAndTimestampBetween(List<String> uris,
+                                                                      LocalDateTime start,
+                                                                      LocalDateTime end);
 }
+

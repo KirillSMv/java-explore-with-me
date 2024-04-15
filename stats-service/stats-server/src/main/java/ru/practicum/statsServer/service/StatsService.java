@@ -1,14 +1,14 @@
 package ru.practicum.statsServer.service;
 
-import ru.practicum.statsDto.GetStatsParamsDto;
 import ru.practicum.statsDto.NewStatsDto;
-import ru.practicum.statsServer.storage.StatsDtoToUser;
+import ru.practicum.statsDto.StatsParamsDto;
+import ru.practicum.statsDto.StatsToUserDto;
 
 import java.util.List;
 
 public interface StatsService {
 
-    void saveStats(NewStatsDto newStatsDto);
+    StatsToUserDto saveStats(NewStatsDto newStatsDto);
 
-    List<StatsDtoToUser> getStats(GetStatsParamsDto getStatsParamsDto);
+    List<StatsToUserDto> getStats(StatsParamsDto statsParamsDto);
 }

@@ -14,10 +14,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class NewStatsDto {
 
-    @NotBlank(message = "Значение app не может быть пустым")
+    @NotBlank(message = "app value cannot be empty")
     String app;
 
-    @NotBlank(message = "Значение uri не может быть пустым")
+    @NotBlank(message = "uri value cannot be empty")
     String uri;
 
     @ValidIPv4
