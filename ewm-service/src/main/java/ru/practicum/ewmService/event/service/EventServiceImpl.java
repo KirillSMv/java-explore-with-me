@@ -19,6 +19,8 @@ import ru.practicum.ewmService.event.service.interfaces.EventService;
 import ru.practicum.ewmService.event.service.interfaces.StatsRecordingService;
 import ru.practicum.ewmService.event.storage.EventRepository;
 import ru.practicum.ewmService.exceptions.*;
+import ru.practicum.ewmService.location.model.EventLocation;
+import ru.practicum.ewmService.location.storage.LocationRepository;
 import ru.practicum.ewmService.request.dto.EventRequestStatusUpdateRequest;
 import ru.practicum.ewmService.request.dto.EventRequestStatusUpdateResult;
 import ru.practicum.ewmService.request.dto.ParticipationRequestDto;
@@ -48,6 +50,7 @@ public class EventServiceImpl implements EventService {
     private final StatsRecordingService statsRecordingService;
     private final ParticipationRequestRepository participationRequestRepository;
     private final ParticipationRequestMapper participationRequestMapper;
+    private final LocationRepository locationRepository;
 
     @Override
     @Transactional
@@ -209,7 +212,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public List<EventFullDto> getEventFullDtoList(List<Event> events) {
+    public List<EventFullDto> getEventFullDtoListWithStatistic(List<Event> events) {
         Map<Long, Long> eventIdViewsMap = getEventIdViewsMap(events);
         if (eventIdViewsMap.values().stream().allMatch(value -> value.equals(0L))) {
             return eventDtoMapper.toEventFullDtoList(events, eventIdViewsMap).stream()
@@ -296,7 +299,29 @@ public class EventServiceImpl implements EventService {
     @Override
     public List<EventFullDto> getEventsBySearch(SearchParametersAdminRequest searchParametersAdminRequest) {
         List<Event> eventsList = eventRepository.findAll(getPredicate(searchParametersAdminRequest), searchParametersAdminRequest.getPageable()).getContent();
-        return getEventFullDtoList(eventsList);
+        return getEventFullDtoListWithStatistic(eventsList);
+    }
+
+    @Override
+    public List<EventShortDto> getEventsByLocation(Long locId) {
+        EventLocation eventLocation = locationRepository.findById(locId).orElseThrow(() -> {
+            log.error("Location with id {} could not be found", locId);
+            return new ObjectNotFoundException("The required object was not found.",
+                    String.format("Location with id=%d was not found", locId));
+        });
+        List<Event> eventsList = eventRepository.getEventsByLocation(eventLocation.getLat(), eventLocation.getLon(), eventLocation.getRad());
+        return getEventShortDtoListWithStatistic(eventsList);
+    }
+
+    @Override
+    public List<EventShortDto> getEventsByLocationName(String text) {
+        EventLocation eventLocation = locationRepository.findByNameContaining(text).orElseThrow(() -> {
+            log.error("Location containing text = {} could not be found", text);
+            return new ObjectNotFoundException("The required object was not found.",
+                    String.format("Location containing text = %s could not be found", text));
+        });
+        List<Event> eventsList = eventRepository.getEventsByLocation(eventLocation.getLat(), eventLocation.getLon(), eventLocation.getRad());
+        return getEventShortDtoListWithStatistic(eventsList);
     }
 
     private BooleanBuilder getPredicate(SearchParametersAdminRequest searchParametersAdminRequest) {

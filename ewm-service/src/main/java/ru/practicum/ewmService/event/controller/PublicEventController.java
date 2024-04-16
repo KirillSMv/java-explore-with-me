@@ -62,6 +62,21 @@ public class PublicEventController {
         return new ResponseEntity<>(eventFullDto, HttpStatus.OK);
     }
 
+
+    @GetMapping("/location/{locId}")
+    public ResponseEntity<List<EventShortDto>> getEventsByLocation(@PathVariable("locId") Long locId) {
+        log.info("searchByLocation method, locId = {}", locId);
+        List<EventShortDto> eventShortDtoList = eventService.getEventsByLocation(locId);
+        return new ResponseEntity<>(eventShortDtoList, HttpStatus.OK);
+    }
+
+    @GetMapping("/location")
+    public ResponseEntity<List<EventShortDto>> getEventsByLocationName(@RequestParam("text") String text) {
+        log.info("getEventsByLocationName method, text = {}", text);
+        List<EventShortDto> eventShortDtoList = eventService.getEventsByLocationName(text);
+        return new ResponseEntity<>(eventShortDtoList, HttpStatus.OK);
+    }
+
     private SearchParametersPublicRequest checkParameters(String text, List<Long> categories, Boolean paid,
                                                           String rangeStart, String rangeEnd, Boolean onlyAvailable,
                                                           String sort, Integer from, Integer size) {

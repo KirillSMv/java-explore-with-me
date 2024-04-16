@@ -34,7 +34,7 @@ public interface EventService {
 
     List<Event> finalAllById(List<Long> eventsIds);
 
-    List<EventFullDto> getEventFullDtoList(List<Event> events);
+    List<EventFullDto> getEventFullDtoListWithStatistic(List<Event> events);
 
     Map<Long, Long> getEventIdViewsMap(List<Event> events);
 
@@ -46,5 +46,7 @@ public interface EventService {
 
     EventFullDto getEventById(Long eventId);
 
+    List<EventShortDto> getEventsByLocation(Long locId);
 
+    List<EventShortDto> getEventsByLocationName(String text);
 }
