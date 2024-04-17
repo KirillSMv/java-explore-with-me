@@ -7,6 +7,7 @@ import ru.practicum.ewmService.event.dto.EventFullDto;
 import ru.practicum.ewmService.event.dto.EventShortDto;
 import ru.practicum.ewmService.event.dto.NewEventDto;
 import ru.practicum.ewmService.event.model.Event;
+import ru.practicum.ewmService.location.dto.mapper.LocationDtoMapper;
 import ru.practicum.ewmService.user.dto.mapper.UserDtoMapper;
 
 import java.util.List;
@@ -19,13 +20,13 @@ public class EventDtoMapper {
 
     private final CategoryDtoMapper categoryDtoMapper;
     private final UserDtoMapper userDtoMapper;
+    private final LocationDtoMapper locationDtoMapper;
 
     public Event toEvent(NewEventDto newEventDto) {
         Event event = new Event();
         event.setAnnotation(newEventDto.getAnnotation());
         event.setDescription(newEventDto.getDescription());
         event.setEventDate(newEventDto.getEventDate());
-        event.setLocation(newEventDto.getLocation());
         event.setPaid(newEventDto.isPaid());
         event.setParticipantLimit(newEventDto.getParticipantLimit());
         event.setRequestModeration(newEventDto.isRequestModeration());
@@ -41,7 +42,6 @@ public class EventDtoMapper {
         eventFullDto.setCreatedOn(event.getCreatedOn());
         eventFullDto.setDescription(event.getDescription());
         eventFullDto.setEventDate(event.getEventDate());
-        eventFullDto.setLocation(event.getLocation());
         eventFullDto.setPaid(event.isPaid());
         eventFullDto.setParticipantLimit(event.getParticipantLimit());
         eventFullDto.setPublishedOn(event.getPublishedOn());
@@ -51,6 +51,7 @@ public class EventDtoMapper {
         eventFullDto.setViews(views);
         eventFullDto.setCategory(categoryDtoMapper.toCategoryDto(event.getCategory()));
         eventFullDto.setInitiator(userDtoMapper.toUserShortDto(event.getInitiator()));
+        eventFullDto.setLocation(locationDtoMapper.toLocationShortDto(event.getLocation()));
         eventFullDto.setViews(views);
         return eventFullDto;
     }

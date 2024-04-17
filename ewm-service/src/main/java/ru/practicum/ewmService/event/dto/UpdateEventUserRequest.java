@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.ewmService.event.enums.EventStateAction;
-import ru.practicum.ewmService.event.model.Location;
 import ru.practicum.ewmService.event.validation.EventDateValidation;
 import ru.practicum.ewmService.event.validation.NotBlankNullable;
 
@@ -33,7 +32,7 @@ public class UpdateEventUserRequest {
     @EventDateValidation
     private LocalDateTime eventDate;
 
-    private Location location;
+    private LocationShortDto location;
 
     private Boolean paid;
 

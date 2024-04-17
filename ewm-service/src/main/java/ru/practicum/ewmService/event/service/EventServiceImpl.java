@@ -19,7 +19,9 @@ import ru.practicum.ewmService.event.service.interfaces.EventService;
 import ru.practicum.ewmService.event.service.interfaces.StatsRecordingService;
 import ru.practicum.ewmService.event.storage.EventRepository;
 import ru.practicum.ewmService.exceptions.*;
-import ru.practicum.ewmService.location.model.EventLocation;
+import ru.practicum.ewmService.location.dto.LocationDto;
+import ru.practicum.ewmService.location.model.Location;
+import ru.practicum.ewmService.location.service.LocationService;
 import ru.practicum.ewmService.location.storage.LocationRepository;
 import ru.practicum.ewmService.request.dto.EventRequestStatusUpdateRequest;
 import ru.practicum.ewmService.request.dto.EventRequestStatusUpdateResult;
@@ -51,6 +53,7 @@ public class EventServiceImpl implements EventService {
     private final ParticipationRequestRepository participationRequestRepository;
     private final ParticipationRequestMapper participationRequestMapper;
     private final LocationRepository locationRepository;
+    private final LocationService locationService;
 
     @Override
     @Transactional
@@ -64,10 +67,27 @@ public class EventServiceImpl implements EventService {
             log.error("Category with id {} could not be found", userId);
             return new ObjectNotFoundException("The required object was not found.", String.format("Category with id=%d was not found", newEventDto.getCategory()));
         });
+        event.setLocation(getLocationByCoordinates(newEventDto.getLocation().getLat(), newEventDto.getLocation().getLon()));
         event.setCategory(category);
         event.setInitiator(user);
         log.debug("event = {}", event);
         return eventDtoMapper.toEventFullDto(eventRepository.save(event), 0L);
+    }
+
+    private Location getLocationByCoordinates(float lat, float lon) {
+        List<Location> locations = locationRepository.getLocationByCoordinates(lat, lon);
+        if (locations.isEmpty()) {
+            LocationDto locationDto = new LocationDto();
+            locationDto.setLat(lat);
+            locationDto.setLon(lon);
+            locationDto.setRad(0f);
+            LocationDto savedLocationDto = locationService.addLocation(locationDto);
+            return new Location(savedLocationDto.getId(), savedLocationDto.getName(), savedLocationDto.getLat(),
+                    savedLocationDto.getLon(), savedLocationDto.getRad());
+            //здесь можно было бы сразу сохранить через locationRepository.save(), но мне кажется с добавлением лучше работать в сервисе,
+            //поскольку сервис непосредственно отвечает за работу с этой сущностью.
+        }
+        return locations.stream().min(Comparator.comparingDouble(Location::getRad)).get();
     }
 
     @Override
@@ -122,7 +142,7 @@ public class EventServiceImpl implements EventService {
             return new ObjectNotFoundException("The required object was not found.", String.format("Event with id=%d was not found", eventId));
         });
         checkExceptionalCasesWhenUpdateEvent(event, updateEventUserRequest);
-        Event updatedEvent = updateEventFields(event, updateEventUserRequest);
+        Event updatedEvent = updateEventFieldsAdminRequest(event, updateEventUserRequest);
         return eventDtoMapper.toEventFullDto(updatedEvent, 0L);
     }
 
@@ -292,7 +312,7 @@ public class EventServiceImpl implements EventService {
             return new ObjectNotFoundException("The required object was not found.", String.format("Event with id=%d was not found", eventId));
         });
         checkUpdateRequirements(event, updateEventAdminRequest);
-        Event updatedEvent = eventRepository.save(updateEventFields(event, updateEventAdminRequest));
+        Event updatedEvent = eventRepository.save(updateEventFieldsAdminRequest(event, updateEventAdminRequest));
         return getEventFullDtoWithStatistic(updatedEvent);
     }
 
@@ -304,24 +324,24 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<EventShortDto> getEventsByLocation(Long locId) {
-        EventLocation eventLocation = locationRepository.findById(locId).orElseThrow(() -> {
+        Location location = locationRepository.findById(locId).orElseThrow(() -> {
             log.error("Location with id {} could not be found", locId);
             return new ObjectNotFoundException("The required object was not found.",
                     String.format("Location with id=%d was not found", locId));
         });
-        List<Event> eventsList = eventRepository.getEventsByLocation(eventLocation.getLat(), eventLocation.getLon(), eventLocation.getRad());
-        return getEventShortDtoListWithStatistic(eventsList);
+        List<Event> events = eventRepository.findAllByLocation(location);
+        return getEventShortDtoListWithStatistic(events);
     }
 
     @Override
     public List<EventShortDto> getEventsByLocationName(String text) {
-        EventLocation eventLocation = locationRepository.findByNameContaining(text).orElseThrow(() -> {
-            log.error("Location containing text = {} could not be found", text);
-            return new ObjectNotFoundException("The required object was not found.",
-                    String.format("Location containing text = %s could not be found", text));
-        });
-        List<Event> eventsList = eventRepository.getEventsByLocation(eventLocation.getLat(), eventLocation.getLon(), eventLocation.getRad());
-        return getEventShortDtoListWithStatistic(eventsList);
+        Optional<Location> eventLocationOptional = locationRepository.findByNameContaining(text);
+        if (eventLocationOptional.isEmpty()) {
+            return new ArrayList<>();
+        }
+        Location location = eventLocationOptional.get();
+        List<Event> events = eventRepository.findAllByLocation(location);
+        return getEventShortDtoListWithStatistic(events);
     }
 
     private BooleanBuilder getPredicate(SearchParametersAdminRequest searchParametersAdminRequest) {
@@ -367,11 +387,10 @@ public class EventServiceImpl implements EventService {
         }
     }
 
-    private Event updateEventFields(Event event, UpdateEventAdminRequest updateEventAdminRequest) {
+    private Event updateEventFieldsAdminRequest(Event event, UpdateEventAdminRequest updateEventAdminRequest) {
         event.setAnnotation(Objects.requireNonNullElse(updateEventAdminRequest.getAnnotation(), event.getAnnotation()));
         event.setDescription(Objects.requireNonNullElse(updateEventAdminRequest.getDescription(), event.getDescription()));
         event.setEventDate(Objects.requireNonNullElse(updateEventAdminRequest.getEventDate(), event.getEventDate()));
-        event.setLocation(Objects.requireNonNullElse(updateEventAdminRequest.getLocation(), event.getLocation()));
         event.setPaid(Objects.requireNonNullElse(updateEventAdminRequest.getPaid(), event.isPaid()));
         event.setParticipantLimit(Objects.requireNonNullElse(updateEventAdminRequest.getParticipantLimit(), event.getParticipantLimit()));
         event.setRequestModeration(Objects.requireNonNullElse(updateEventAdminRequest.getRequestModeration(), event.isRequestModeration()));
@@ -382,7 +401,6 @@ public class EventServiceImpl implements EventService {
         } else if (updateEventAdminRequest.getStateAction() == EventStateAction.REJECT_EVENT) {
             event.setState(EventState.CANCELED);
         }
-
         Long newCategoryId = updateEventAdminRequest.getCategory();
         if (newCategoryId != null) {
             if (!event.getCategory().getId().equals(newCategoryId)) {
@@ -392,6 +410,40 @@ public class EventServiceImpl implements EventService {
                 });
                 event.setCategory(newCategory);
             }
+        }
+        if (updateEventAdminRequest.getLocation() != null) {
+            event.setLocation(getLocationByCoordinates(updateEventAdminRequest.getLocation().getLat(), updateEventAdminRequest.getLocation().getLon()));
+        }
+        return event;
+    }
+
+    private Event updateEventFieldsAdminRequest(Event event, UpdateEventUserRequest updateEventUserRequest) {
+        event.setAnnotation(Objects.requireNonNullElse(updateEventUserRequest.getAnnotation(), event.getAnnotation()));
+        event.setDescription(Objects.requireNonNullElse(updateEventUserRequest.getDescription(), event.getDescription()));
+        event.setEventDate(Objects.requireNonNullElse(updateEventUserRequest.getEventDate(), event.getEventDate()));
+        event.setPaid(Objects.requireNonNullElse(updateEventUserRequest.getPaid(), event.isPaid()));
+        event.setParticipantLimit(Objects.requireNonNullElse(updateEventUserRequest.getParticipantLimit(), event.getParticipantLimit()));
+        event.setRequestModeration(Objects.requireNonNullElse(updateEventUserRequest.getRequestModeration(), event.isRequestModeration()));
+        event.setTitle(Objects.requireNonNullElse(updateEventUserRequest.getTitle(), event.getTitle()));
+        if (updateEventUserRequest.getStateAction() == EventStateAction.SEND_TO_REVIEW) {
+            event.setState(EventState.PENDING);
+        }
+        if (updateEventUserRequest.getStateAction() == EventStateAction.CANCEL_REVIEW) {
+            event.setState(EventState.CANCELED);
+        }
+        Long newCategoryId = updateEventUserRequest.getCategory();
+        if (newCategoryId != null) {
+            if (!event.getCategory().getId().equals(newCategoryId)) {
+                Category newCategory = categoryRepository.findById(newCategoryId).orElseThrow(() -> {
+                    log.error("Category with id {} could not be found", newCategoryId);
+                    return new ObjectNotFoundException("The required object was not found.",
+                            String.format("Category with id=%d was not found", newCategoryId));
+                });
+                event.setCategory(newCategory);
+            }
+        }
+        if (updateEventUserRequest.getLocation() != null) {
+            event.setLocation(getLocationByCoordinates(updateEventUserRequest.getLocation().getLat(), updateEventUserRequest.getLocation().getLon()));
         }
         return event;
     }
@@ -474,35 +526,6 @@ public class EventServiceImpl implements EventService {
         String uri = "/events/" + event.getId();
         StatsParamsDto statsParamsDto = new StatsParamsDto(start, LocalDateTime.now(), List.of(uri), true);
         return statsRecordingService.getStats(statsParamsDto);
-    }
-
-    private Event updateEventFields(Event event, UpdateEventUserRequest updateEventUserRequest) {
-        event.setAnnotation(Objects.requireNonNullElse(updateEventUserRequest.getAnnotation(), event.getAnnotation()));
-        event.setDescription(Objects.requireNonNullElse(updateEventUserRequest.getDescription(), event.getDescription()));
-        event.setEventDate(Objects.requireNonNullElse(updateEventUserRequest.getEventDate(), event.getEventDate()));
-        event.setLocation(Objects.requireNonNullElse(updateEventUserRequest.getLocation(), event.getLocation()));
-        event.setPaid(Objects.requireNonNullElse(updateEventUserRequest.getPaid(), event.isPaid()));
-        event.setParticipantLimit(Objects.requireNonNullElse(updateEventUserRequest.getParticipantLimit(), event.getParticipantLimit()));
-        event.setRequestModeration(Objects.requireNonNullElse(updateEventUserRequest.getRequestModeration(), event.isRequestModeration()));
-        event.setTitle(Objects.requireNonNullElse(updateEventUserRequest.getTitle(), event.getTitle()));
-        if (updateEventUserRequest.getStateAction() == EventStateAction.SEND_TO_REVIEW) {
-            event.setState(EventState.PENDING);
-        }
-        if (updateEventUserRequest.getStateAction() == EventStateAction.CANCEL_REVIEW) {
-            event.setState(EventState.CANCELED);
-        }
-        Long newCategoryId = updateEventUserRequest.getCategory();
-        if (newCategoryId != null) {
-            if (!event.getCategory().getId().equals(newCategoryId)) {
-                Category newCategory = categoryRepository.findById(newCategoryId).orElseThrow(() -> {
-                    log.error("Category with id {} could not be found", newCategoryId);
-                    return new ObjectNotFoundException("The required object was not found.",
-                            String.format("Category with id=%d was not found", newCategoryId));
-                });
-                event.setCategory(newCategory);
-            }
-        }
-        return event;
     }
 
     private List<ParticipationRequest> processRejectedParticipationRequests(List<ParticipationRequest> participationRequestList,

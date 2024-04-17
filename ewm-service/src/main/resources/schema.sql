@@ -4,7 +4,7 @@ drop TABLE IF EXISTS compilations CASCADE;
 drop TABLE IF EXISTS events CASCADE;
 drop TABLE IF EXISTS events_compilations CASCADE;
 drop TABLE IF EXISTS event_requests CASCADE;
-drop TABLE IF EXISTS places CASCADE;
+drop TABLE IF EXISTS locations CASCADE;
 
 create table if not exists users (
     id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -23,6 +23,14 @@ create table if not exists compilations (
     title varchar(50) NOT NULL
 );
 
+create table if not exists locations (
+   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+   name varchar(120) unique,
+   lat real NOT NULL,
+   lon real NOT NULL,
+   rad real NOT NULL
+);
+
 create table if not exists events (
     id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     annotation varchar(2000) NOT NULL,
@@ -38,10 +46,10 @@ create table if not exists events (
     request_moderation boolean,
     state varchar(9) NOT NULL,
     participant_limit integer NOT NULL,
-    lat real NOT NULL,
-    lon real NOT NULL,
+    location_id BIGINT,
     CONSTRAINT fk_events_to_users FOREIGN KEY(user_id) REFERENCES users(id) ON delete CASCADE ON update CASCADE,
-    CONSTRAINT fk_events_to_categories FOREIGN KEY(category_id) REFERENCES categories(id) ON delete CASCADE ON update CASCADE
+    CONSTRAINT fk_events_to_categories FOREIGN KEY(category_id) REFERENCES categories(id) ON delete CASCADE ON update CASCADE,
+    CONSTRAINT fk_events_to_locations FOREIGN KEY(location_id) REFERENCES locations(id) ON delete CASCADE ON update CASCADE
 );
 
 create table if not exists events_compilations (
@@ -61,14 +69,6 @@ create table if not exists event_requests (
     CONSTRAINT fk_event_requests_to_users FOREIGN KEY(user_id) REFERENCES users(id) ON delete CASCADE ON update CASCADE,
     CONSTRAINT fk_event_requests_to_events FOREIGN KEY(event_id) REFERENCES events(id) ON delete CASCADE ON update CASCADE,
     CONSTRAINT unique_event_id_user_id UNIQUE(event_id, user_id)
-);
-
-create table if not exists places (
-   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-   name varchar(120) NOT NULL unique,
-   lat real NOT NULL,
-   lon real NOT NULL,
-   rad real NOT NULL
 );
 
 create or replace FUNCTION public.distance(

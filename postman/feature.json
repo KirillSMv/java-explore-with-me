@@ -204,6 +204,76 @@
 						"exec": [
 							"pm.test(\"Ответ должен содержать код статуса 200 и данные в формате json\", function() {\r",
 							"    pm.response.to.be.ok; // код ответа должен быть равен 200 OK\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/events/location?text=Ekaterinburg",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"events",
+						"location"
+					],
+					"query": [
+						{
+							"key": "text",
+							"value": "Ekaterinburg"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Добавление события с существующей локацией",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"annotation\" : \"Ut atque numquam ea pariatur.\",\r\n    \"title\" : \"Maxime ipsam distinctio doloribus totam.\",\r\n    \"description\" : \"Omnis quidem ut atque ad natus.\",\r\n    \"category\" : 1,\r\n    \"eventDate\" : \"2024-04-27 01:38:41\",\r\n    \"location\": {\r\n    \"lat\" : 56.833332,\r\n    \"lon\" : 59.5\r\n    },\r\n    \"paid\" : false,\r\n    \"participantLimit\" : 864\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/users/1/events",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"users",
+						"1",
+						"events"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Поиск событий в определенной локации по ее названию",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Ответ должен содержать код статуса 200 и данные в формате json\", function() {\r",
+							"    pm.response.to.be.ok; // код ответа должен быть равен 200 OK\r",
 							"    pm.response.to.be.withBody; // ответ должен содержать тело\r",
 							"    pm.response.to.be.json; // и тело ответа должно быть в формате JSON\r",
 							"});"

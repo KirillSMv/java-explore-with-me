@@ -1,9 +1,13 @@
 package ru.practicum.ewmService.event.model;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.lang.Nullable;
 import ru.practicum.ewmService.category.model.Category;
 import ru.practicum.ewmService.event.enums.EventState;
+import ru.practicum.ewmService.location.model.Location;
 import ru.practicum.ewmService.user.model.User;
 
 import javax.persistence.*;
@@ -30,9 +34,8 @@ public class Event {
     @Column(name = "description")
     private String description;
 
-    @ManyToOne(fetch = FetchType.EAGER) //указываю для лучшей читаемости кода
+    @ManyToOne
     @JoinColumn(name = "category_id", referencedColumnName = "id")
-    @ToString.Exclude
     private Category category;
 
     @Column(name = "confirmed_requests")
@@ -48,9 +51,8 @@ public class Event {
     @Column(name = "published_on")
     private LocalDateTime publishedOn;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
-    @ToString.Exclude
     private User initiator;
 
     @Column(name = "paid")
@@ -65,7 +67,8 @@ public class Event {
     @Column(name = "participant_limit")
     private int participantLimit;
 
-    @Embedded
+    @ManyToOne
+    @JoinColumn(name = "location_id", referencedColumnName = "id")
     Location location;
 
     @Override
