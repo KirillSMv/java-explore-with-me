@@ -30,7 +30,6 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional
     public CategoryDto addCategory(CategoryDto categoryDto) {
         Category category = categoryDtoMapper.toCategory(categoryDto);
-        log.debug("category {}", category);
         return categoryDtoMapper.toCategoryDto(categoryRepository.save(category));
     }
 

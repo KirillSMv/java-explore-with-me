@@ -1,24 +1,27 @@
-package ru.practicum.ewmService.event.model;
+package ru.practicum.ewmService.event.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import ru.practicum.ewmService.location.validation.LatCoordinates;
+import ru.practicum.ewmService.location.validation.LonCoordinates;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
-import javax.validation.constraints.Size;
 
 @Embeddable
 @Setter
 @Getter
+@AllArgsConstructor
 @NoArgsConstructor
-public class Location {
+public class LocationShortDto {
     @Column(name = "lat")
-    @Size(min = -90, max = 90)
+    @LatCoordinates
     private Float lat;
 
     @Column(name = "lon")
-    @Size(min = -180, max = 180)
+    @LonCoordinates
     private Float lon;
 
     @Override

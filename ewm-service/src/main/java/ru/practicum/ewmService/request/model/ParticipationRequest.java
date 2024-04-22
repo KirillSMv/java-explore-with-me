@@ -1,6 +1,9 @@
 package ru.practicum.ewmService.request.model;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import ru.practicum.ewmService.event.model.Event;
 import ru.practicum.ewmService.request.enums.RequestState;
 import ru.practicum.ewmService.user.model.User;
@@ -21,7 +24,6 @@ public class ParticipationRequest {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "event_id", referencedColumnName = "id")
-    @ToString.Exclude
     private Event event;
 
     @Column(name = "created")
@@ -29,7 +31,6 @@ public class ParticipationRequest {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", referencedColumnName = "id")
-    @ToString.Exclude
     private User requester;
 
     @Enumerated(EnumType.STRING)

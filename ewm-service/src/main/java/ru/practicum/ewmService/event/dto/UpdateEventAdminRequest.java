@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.ewmService.event.enums.EventStateAction;
-import ru.practicum.ewmService.event.model.Location;
 import ru.practicum.ewmService.event.validation.EventDateValidation;
 import ru.practicum.ewmService.event.validation.NotBlankNullable;
 
@@ -32,15 +31,13 @@ public class UpdateEventAdminRequest {
     @EventDateValidation
     LocalDateTime eventDate;
 
-    private Location location;
+    private LocationShortDto location;
 
     private Boolean paid;
 
-    private Integer participantLimit; //0 - нет// ограничений на количество участников
+    private Integer participantLimit;
 
     private Boolean requestModeration;
-    //Если true, то все заявки будут ожидать подтверждения инициатором события.
-    // Если false - то будут подтверждаться автоматически.
 
     private EventStateAction stateAction;
 
