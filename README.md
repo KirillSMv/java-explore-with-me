@@ -40,7 +40,7 @@ confirm
 reject
 Create and manage event compilations
 
-**Сервис статистики**
+**Statistics статистики**
 Stores view counts and provides various data selections for analyzing application performance.
 
 **Service description**
