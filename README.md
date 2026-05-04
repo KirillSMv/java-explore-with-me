@@ -1,72 +1,76 @@
 # Explore With Me
 
-## 🎯 Для чего предназначен этот проект
+## 🎯 What this project is for
 
-**Explore With Me** — это приложение, которое позволяет делиться информацией об интересных событиях и помогает найти компанию для участия в них.  
+**Explore With Me** is an application that allows users to share information about interesting events and helps find companions to attend them.
 
-Проект реализован в виде **двух микросервисов** с отдельными базами данных:
-- **Основной сервис** — содержит основную бизнес-логику приложения.  
-- **Сервис статистики** — сохраняет и предоставляет данные о просмотрах.
+The project is implemented as **two microservices** with separate databases:
+- **Main service** — contains the core business logic of the application.
+- **Statistics service** — stores and provides view data.
 
 ---
 
-## ⚙️ Инструкция по развертыванию проекта
+## ⚙️ Project deployment instructions
 
 ```bash
-# 1. Скачать данный репозиторий
-git clone <URL_репозитория>
+# 1. Clone this repository
+git clone <repository_URL>
 
-# 2. Очистить проект
+# 2. Clean the project
 mvn clean
 
-# 3. Собрать проект
+# 3. Build the project
 mvn package
 
-# 4. Собрать docker-образы
+# 4. Build Docker images
 docker-compose build
 
-# 5. Запустить контейнеры
+# 5. Start containers
 docker-compose up -d
 
-🔹 Основной сервис
-Содержит всё необходимое для работы продукта:
-Просмотр событий без авторизации
-Возможность создания и управления категориями
-Создание и модерация событий
-Работа с запросами пользователей на участие в событиях:
-создание запроса
-подтверждение
-отклонение
-Создание и управление подборками событий
+**Main service**
+Contains everything needed for the product to function:
 
-🔸 Сервис статистики
-Хранит количество просмотров и позволяет делать различные выборки для анализа работы приложения.
-🧾 Описание сервисов
-⚙️ Основной сервис
+View events without authentication
+Create and manage categories
+Create and moderate events
+Handle user participation requests for events:
+create request
+confirm
+reject
+Create and manage event compilations
 
-Работает на порту 8080
+**Сервис статистики**
+Stores view counts and provides various data selections for analyzing application performance.
 
-API разделён на три части:
-1️⃣ Публичный API (доступен для всех пользователей)
-Работа с событиями
-Работа с категориями
-Работа с подборками событий
+**Service description**
+Main service
 
-2️⃣ Приватный API (доступен только для зарегистрированных пользователей)
-Работа с событиями
-Работа с запросами текущего пользователя на участие
+Runs on port 8080
 
-3️⃣ Административный API (доступен только для администратора)
-Работа с событиями
-Работа с категориями
-Работа с пользователями
-Работа с подборками событий
+The API is divided into three parts:
 
-📊 Сервис статистики
-Работает на порту 9090
-Собирает информацию:
-о количестве обращений пользователей к спискам событий
-о количестве запросов к подробной информации о событии
-На основе этих данных формируется статистика работы приложения.
+1️⃣ Public API (available to all users)
+Event browsing
+Category browsing
+Event compilation browsing
+2️⃣ Private API (available only to registered users)
+Event management
+Handling the current user’s participation requests
+3️⃣ Admin API (available only to administrators)
+Event management
+Category management
+User management
+Event compilation management
 Административный API (для администратора проекта)
 Работа со статистикой посещений
+
+**Statistics service**
+Runs on port 9090
+Collects information about:
+number of user requests to event lists
+number of requests for detailed event information
+Based on this data, application usage statistics are generated.
+
+Admin API (project administrator only)
+Access to visit statistics
